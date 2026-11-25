@@ -1,7 +1,17 @@
 import React, { FC } from "react"
 import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
-import { MessageCodeBlock } from "./message-codeblock"
+import dynamic from "next/dynamic"
+
+// Syntax highlighting (Prism + all grammars) is heavy; load it with the first code block
+const MessageCodeBlock = dynamic(
+  () => import("./message-codeblock").then(m => m.MessageCodeBlock),
+  {
+    loading: () => (
+      <pre className="my-2 overflow-x-auto rounded-lg bg-zinc-950 p-4 font-mono text-xs text-zinc-300" />
+    )
+  }
+)
 import { MessageMarkdownMemoized } from "./message-markdown-memoized"
 
 interface MessageMarkdownProps {
@@ -50,7 +60,6 @@ export const MessageMarkdown: FC<MessageMarkdownProps> = ({ content }) => {
 
           return (
             <MessageCodeBlock
-              key={Math.random()}
               language={(match && match[1]) || ""}
               value={String(childArray).replace(/\n$/, "")}
               {...props}

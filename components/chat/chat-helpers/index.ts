@@ -1,5 +1,6 @@
 // Only used in use-chat-handler.tsx to keep it clean
 
+import { trackDemoLimitError, trackDemoResponse } from "@/lib/demo-usage-store"
 import { createChatFiles } from "@/db/chat-files"
 import { createChat } from "@/db/chats"
 import { createMessageFileItems } from "@/db/message-file-items"
@@ -208,9 +209,12 @@ export const handleHostedChat = async (
 
   let draftMessages = await buildFinalMessages(payload, profile, chatImages)
 
-  let formattedMessages : any[] = []
+  let formattedMessages: any[] = []
   if (provider === "google") {
-    formattedMessages = await adaptMessagesForGoogleGemini(payload, draftMessages)
+    formattedMessages = await adaptMessagesForGoogleGemini(
+      payload,
+      draftMessages
+    )
   } else {
     formattedMessages = draftMessages
   }
@@ -267,13 +271,21 @@ export const fetchChatResponse = async (
       )
     }
 
-    const errorData = await response.json()
+    const errorData = await response.json().catch(() => ({}))
 
-    toast.error(errorData.message)
+    // The demo-limit 429 is shown as an inline banner instead of a toast
+    if (!trackDemoLimitError(response.status, errorData)) {
+      toast.error(errorData.message || "Something went wrong.")
+    }
 
     setIsGenerating(false)
     setChatMessages(prevMessages => prevMessages.slice(0, -2))
+
+    // Let the caller restore the user's input instead of streaming an error body
+    throw new Error(errorData.message || `Request failed: ${response.status}`)
   }
+
+  trackDemoResponse(response)
 
   return response
 }

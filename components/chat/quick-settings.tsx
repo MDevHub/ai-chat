@@ -20,7 +20,6 @@ import {
 } from "../ui/dropdown-menu"
 import { Input } from "../ui/input"
 import { QuickSettingOption } from "./quick-setting-option"
-import { set } from "date-fns"
 
 interface QuickSettingsProps {}
 
@@ -55,7 +54,7 @@ export const QuickSettings: FC<QuickSettingsProps> = ({}) => {
     if (isOpen) {
       setTimeout(() => {
         inputRef.current?.focus()
-      }, 100) // FIX: hacky
+      }, 100)
     }
   }, [isOpen])
 
@@ -63,7 +62,6 @@ export const QuickSettings: FC<QuickSettingsProps> = ({}) => {
     item: Tables<"presets"> | Tables<"assistants"> | null,
     contentType: "presets" | "assistants" | "remove"
   ) => {
-    console.log({ item, contentType })
     if (contentType === "assistants" && item) {
       setSelectedAssistant(item as Tables<"assistants">)
       setLoading(true)
@@ -190,117 +188,117 @@ export const QuickSettings: FC<QuickSettingsProps> = ({}) => {
         setSearch("")
       }}
     >
-      <DropdownMenuTrigger asChild className="max-w-[400px]" disabled={loading}>
-        <Button variant="ghost" className="flex space-x-3 text-lg">
+      <DropdownMenuTrigger asChild disabled={loading}>
+        <Button
+          variant="ghost"
+          className="h-9 min-w-0 max-w-full gap-2 rounded-lg border border-zinc-200/80 bg-white/80 px-3 font-mono text-xs text-zinc-700 shadow-sm backdrop-blur-md hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
+        >
           {selectedPreset && (
             <ModelIcon
               provider={modelDetails?.provider || "custom"}
-              width={32}
-              height={32}
+              width={16}
+              height={16}
             />
           )}
 
           {selectedAssistant &&
             (selectedAssistantImage ? (
               <Image
-                className="rounded"
+                className="rounded object-cover"
                 src={selectedAssistantImage}
                 alt="Assistant"
-                width={28}
-                height={28}
+                width={16}
+                height={16}
               />
             ) : (
-              <IconRobotFace
-                className="bg-primary text-secondary border-primary rounded border-DEFAULT p-1"
-                size={28}
-              />
+              <IconRobotFace size={16} className="text-sky-500" />
             ))}
 
           {loading ? (
-            <div className="animate-pulse">Loading assistant...</div>
+            <span className="animate-pulse">Loading...</span>
           ) : (
             <>
-              <div className="overflow-hidden text-ellipsis">
+              <span className="min-w-0 truncate sm:max-w-[200px]">
                 {isModified &&
                   (selectedPreset || selectedAssistant) &&
                   "Modified "}
-
                 {selectedPreset?.name ||
                   selectedAssistant?.name ||
                   t("Quick Settings")}
-              </div>
-
-              <IconChevronDown className="ml-1" />
+              </span>
+              <IconChevronDown size={14} className="shrink-0 text-zinc-400" />
             </>
           )}
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="min-w-[300px] max-w-[500px] space-y-4"
+        className="w-[min(320px,calc(100vw_-_1.5rem))] rounded-2xl border border-zinc-200/90 bg-white/95 p-2 shadow-xl backdrop-blur-xl sm:w-[380px] dark:border-zinc-800/90 dark:bg-zinc-900/95"
         align="start"
       >
         {presets.length === 0 && assistants.length === 0 ? (
-          <div className="p-8 text-center">No items found.</div>
+          <div className="p-6 text-center font-mono text-xs text-zinc-400">
+            No presets or assistants found.
+          </div>
         ) : (
-          <>
+          <div className="space-y-1.5">
             <Input
               ref={inputRef}
-              className="w-full"
-              placeholder="Search..."
+              className="h-8 rounded-lg border-zinc-200 bg-zinc-50/70 px-2.5 text-xs dark:border-zinc-800 dark:bg-zinc-950/70"
+              placeholder="Search quick settings..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               onKeyDown={e => e.stopPropagation()}
             />
 
-            {!!(selectedPreset || selectedAssistant) && (
-              <QuickSettingOption
-                contentType={selectedPreset ? "presets" : "assistants"}
-                isSelected={true}
-                item={
-                  selectedPreset ||
-                  (selectedAssistant as
-                    | Tables<"presets">
-                    | Tables<"assistants">)
-                }
-                onSelect={() => {
-                  handleSelectQuickSetting(null, "remove")
-                }}
-                image={selectedPreset ? "" : selectedAssistantImage}
-              />
-            )}
-
-            {items
-              .filter(
-                item =>
-                  item.name.toLowerCase().includes(search.toLowerCase()) &&
-                  item.id !== selectedPreset?.id &&
-                  item.id !== selectedAssistant?.id
-              )
-              .map(({ contentType, ...item }) => (
+            <div className="max-h-64 space-y-1 overflow-y-auto pt-1">
+              {!!(selectedPreset || selectedAssistant) && (
                 <QuickSettingOption
-                  key={item.id}
-                  contentType={contentType as "presets" | "assistants"}
-                  isSelected={false}
-                  item={item}
-                  onSelect={() =>
-                    handleSelectQuickSetting(
-                      item,
-                      contentType as "presets" | "assistants"
-                    )
+                  contentType={selectedPreset ? "presets" : "assistants"}
+                  isSelected={true}
+                  item={
+                    selectedPreset ||
+                    (selectedAssistant as
+                      | Tables<"presets">
+                      | Tables<"assistants">)
                   }
-                  image={
-                    contentType === "assistants"
-                      ? assistantImages.find(
-                          image =>
-                            image.path ===
-                            (item as Tables<"assistants">).image_path
-                        )?.base64 || ""
-                      : ""
-                  }
+                  onSelect={() => handleSelectQuickSetting(null, "remove")}
+                  image={selectedPreset ? "" : selectedAssistantImage}
                 />
-              ))}
-          </>
+              )}
+
+              {items
+                .filter(
+                  item =>
+                    item.name.toLowerCase().includes(search.toLowerCase()) &&
+                    item.id !== selectedPreset?.id &&
+                    item.id !== selectedAssistant?.id
+                )
+                .map(({ contentType, ...item }) => (
+                  <QuickSettingOption
+                    key={item.id}
+                    contentType={contentType as "presets" | "assistants"}
+                    isSelected={false}
+                    item={item}
+                    onSelect={() =>
+                      handleSelectQuickSetting(
+                        item,
+                        contentType as "presets" | "assistants"
+                      )
+                    }
+                    image={
+                      contentType === "assistants"
+                        ? assistantImages.find(
+                            image =>
+                              image.path ===
+                              (item as Tables<"assistants">).image_path
+                          )?.base64 || ""
+                        : ""
+                    }
+                  />
+                ))}
+            </div>
+          </div>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

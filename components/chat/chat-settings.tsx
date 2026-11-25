@@ -66,22 +66,24 @@ export const ChatSettings: FC<ChatSettingsProps> = ({}) => {
 
   return (
     <Popover>
-      <PopoverTrigger>
+      <PopoverTrigger asChild>
         <Button
           ref={buttonRef}
-          className="flex items-center space-x-2"
           variant="ghost"
+          className="h-9 min-w-0 max-w-full gap-2 rounded-lg border border-zinc-200/80 bg-white/80 px-3 font-mono text-xs text-zinc-700 shadow-sm backdrop-blur-md hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
         >
-          <div className="max-w-[120px] truncate text-lg sm:max-w-[300px] lg:max-w-[500px]">
+          <span className="min-w-0 truncate sm:max-w-[220px] lg:max-w-[320px]">
             {fullModel?.modelName || chatSettings.model}
-          </div>
-
-          <IconAdjustmentsHorizontal size={28} />
+          </span>
+          <IconAdjustmentsHorizontal
+            size={16}
+            className="shrink-0 text-zinc-400"
+          />
         </Button>
       </PopoverTrigger>
 
       <PopoverContent
-        className="bg-background border-input relative flex max-h-[calc(100vh-60px)] w-[300px] flex-col space-y-4 overflow-auto rounded-lg border-2 p-6 sm:w-[350px] md:w-[400px] lg:w-[500px] dark:border-none"
+        className="w-[min(320px,calc(100vw_-_1.5rem))] rounded-2xl border border-zinc-200/90 bg-white/95 p-5 shadow-xl backdrop-blur-xl sm:w-[380px] md:w-[440px] dark:border-zinc-800/90 dark:bg-zinc-900/95"
         align="end"
       >
         <ChatSettingsForm

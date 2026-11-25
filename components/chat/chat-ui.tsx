@@ -1,3 +1,4 @@
+import { SidebarOpenButton } from "@/components/sidebar/sidebar-open-button"
 import Loading from "@/app/[locale]/loading"
 import { useChatHandler } from "@/components/chat/chat-hooks/use-chat-handler"
 import { ChatbotUIContext } from "@/context/context"
@@ -10,6 +11,7 @@ import { getMessageImageFromStorage } from "@/db/storage/message-images"
 import { convertBlobToBase64 } from "@/lib/blob-to-b64"
 import useHotkey from "@/lib/hooks/use-hotkey"
 import { LLMID, MessageImage } from "@/types"
+import { IconTerminal2 } from "@tabler/icons-react"
 import { useParams } from "next/navigation"
 import { FC, useContext, useEffect, useState } from "react"
 import { ChatHelp } from "./chat-help"
@@ -186,8 +188,9 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
   }
 
   return (
-    <div className="relative flex h-full flex-col items-center">
-      <div className="absolute left-4 top-2.5 flex justify-center">
+    <div className="relative flex h-full flex-col items-center bg-zinc-50/50 dark:bg-[#0a0a0c]">
+      <div className="absolute left-4 top-3 z-10 flex h-9 items-center gap-1.5">
+        <SidebarOpenButton />
         <ChatScrollButtons
           isAtTop={isAtTop}
           isAtBottom={isAtBottom}
@@ -197,32 +200,33 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
         />
       </div>
 
-      <div className="absolute right-4 top-1 flex h-[40px] items-center space-x-2">
+      <div className="absolute right-4 top-3 z-10 flex h-9 items-center space-x-2">
         <ChatSecondaryButtons />
       </div>
 
-      <div className="bg-secondary flex max-h-[50px] min-h-[50px] w-full items-center justify-center border-b-2 font-bold">
-        <div className="max-w-[200px] truncate sm:max-w-[400px] md:max-w-[500px] lg:max-w-[600px] xl:max-w-[700px]">
-          {selectedChat?.name || "Chat"}
+      <div className="flex h-12 w-full shrink-0 items-center justify-center border-b border-zinc-200/80 bg-white/60 px-28 font-mono text-xs font-semibold text-zinc-700 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/60 dark:text-zinc-300">
+        <div className="flex items-center gap-2 truncate">
+          <IconTerminal2 className="size-3.5 text-sky-500" />
+          <span className="truncate">
+            {selectedChat?.name || "Active Session"}
+          </span>
         </div>
       </div>
 
       <div
-        className="flex size-full flex-col overflow-auto border-b"
+        className="flex size-full min-h-0 flex-col overflow-y-auto overflow-x-hidden px-3 py-6 sm:px-4"
         onScroll={handleScroll}
       >
         <div ref={messagesStartRef} />
-
         <ChatMessages />
-
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="relative w-full min-w-[300px] items-end px-2 pb-3 pt-0 sm:w-[600px] sm:pb-8 sm:pt-5 md:w-[700px] lg:w-[700px] xl:w-[800px]">
+      <div className="relative w-full max-w-[800px] items-end px-3 pb-3 sm:px-4 sm:pb-6 sm:pt-2 lg:max-w-[700px] xl:max-w-[800px]">
         <ChatInput />
       </div>
 
-      <div className="absolute bottom-2 right-2 hidden md:block lg:bottom-4 lg:right-4">
+      <div className="absolute bottom-3 right-3 z-10 hidden md:block lg:bottom-4 lg:right-4">
         <ChatHelp />
       </div>
     </div>

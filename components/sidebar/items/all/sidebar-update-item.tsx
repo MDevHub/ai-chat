@@ -80,8 +80,8 @@ import {
 import { convertBlobToBase64 } from "@/lib/blob-to-b64"
 import { Tables, TablesUpdate } from "@/supabase/types"
 import { CollectionFile, ContentType, DataItemType } from "@/types"
+import { IconTerminal2 } from "@tabler/icons-react"
 import { FC, useContext, useEffect, useRef, useState } from "react"
-import profile from "react-syntax-highlighter/dist/esm/languages/hljs/profile"
 import { toast } from "sonner"
 import { SidebarDeleteItem } from "./sidebar-delete-item"
 
@@ -103,6 +103,7 @@ export const SidebarUpdateItem: FC<SidebarUpdateItemProps> = ({
   isTyping
 }) => {
   const {
+    profile,
     workspaces,
     selectedWorkspace,
     setChats,
@@ -588,7 +589,7 @@ export const SidebarUpdateItem: FC<SidebarUpdateItemProps> = ({
       const setStateFunction = stateUpdateFunctions[contentType]
 
       if (!updateFunction || !setStateFunction) return
-      if (isTyping) return // Prevent update while typing
+      if (isTyping) return
 
       const updatedItem = await updateFunction(item.id, updateState)
 
@@ -629,26 +630,35 @@ export const SidebarUpdateItem: FC<SidebarUpdateItemProps> = ({
     }
   }
 
+  const itemLabel =
+    contentType.charAt(0).toUpperCase() + contentType.slice(1, -1)
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
 
       <SheetContent
-        className="flex min-w-[450px] flex-col justify-between"
+        className="flex w-full flex-col justify-between border-r border-zinc-200/80 bg-white/95 p-0 backdrop-blur-xl sm:max-w-[460px] dark:border-zinc-800/80 dark:bg-zinc-950/95"
         side="left"
         onKeyDown={handleKeyDown}
       >
-        <div className="grow overflow-auto">
-          <SheetHeader>
-            <SheetTitle className="text-2xl font-bold">
-              Edit {contentType.slice(0, -1)}
+        <div className="flex min-h-0 flex-1 flex-col">
+          <SheetHeader className="border-b border-zinc-100 px-6 pb-4 pt-5 text-left dark:border-zinc-800/80">
+            <div className="mb-1 flex items-center gap-1.5 font-mono text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+              <IconTerminal2 className="size-3.5 text-sky-500" />
+              <span>mdev.ai / {contentType}</span>
+            </div>
+            <SheetTitle className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              Edit {itemLabel}
             </SheetTitle>
           </SheetHeader>
 
-          <div className="mt-4 space-y-3">
+          <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
             {workspaces.length > 1 && (
-              <div className="space-y-1">
-                <Label>Assigned Workspaces</Label>
+              <div className="space-y-1.5">
+                <Label className="font-mono text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                  Assigned Workspaces
+                </Label>
 
                 <AssignWorkspaces
                   selectedWorkspaces={selectedWorkspaces}
@@ -661,17 +671,27 @@ export const SidebarUpdateItem: FC<SidebarUpdateItemProps> = ({
           </div>
         </div>
 
-        <SheetFooter className="mt-2 flex justify-between">
-          <SidebarDeleteItem item={item} contentType={contentType} />
+        <SheetFooter className="border-t border-zinc-100 bg-zinc-50/50 px-6 py-4 dark:border-zinc-800/80 dark:bg-zinc-900/40">
+          <div className="flex w-full items-center justify-between">
+            <SidebarDeleteItem item={item} contentType={contentType} />
 
-          <div className="flex grow justify-end space-x-2">
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Cancel
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                className="h-9 rounded-lg border-zinc-200 bg-transparent px-4 font-mono text-xs text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800/60"
+              >
+                Cancel
+              </Button>
 
-            <Button ref={buttonRef} onClick={handleUpdate}>
-              Save
-            </Button>
+              <Button
+                ref={buttonRef}
+                onClick={handleUpdate}
+                className="h-9 rounded-lg bg-zinc-900 px-4 text-xs font-semibold text-white shadow-sm hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+              >
+                Save Changes
+              </Button>
+            </div>
           </div>
         </SheetFooter>
       </SheetContent>

@@ -221,13 +221,13 @@ export const SidebarDataList: FC<SidebarDataListProps> = ({
     <>
       <div
         ref={divRef}
-        className="mt-2 flex flex-col overflow-auto"
+        className="mt-2 flex flex-1 flex-col overflow-y-auto"
         onDrop={handleDrop}
       >
         {data.length === 0 && (
-          <div className="flex grow flex-col items-center justify-center">
-            <div className=" text-centertext-muted-foreground p-8 text-lg italic">
-              No {contentType}.
+          <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
+            <div className="font-mono text-xs text-zinc-400 dark:text-zinc-500">
+              No {contentType} yet
             </div>
           </div>
         )}
@@ -235,8 +235,8 @@ export const SidebarDataList: FC<SidebarDataListProps> = ({
         {(dataWithFolders.length > 0 || dataWithoutFolders.length > 0) && (
           <div
             className={`h-full ${
-              isOverflowing ? "w-[calc(100%-8px)]" : "w-full"
-            } space-y-2 pt-2 ${isOverflowing ? "mr-2" : ""}`}
+              isOverflowing ? "w-[calc(100%-6px)]" : "w-full"
+            } space-y-2 pt-1 ${isOverflowing ? "mr-1.5" : ""}`}
           >
             {folders.map(folder => (
               <Folder
@@ -259,7 +259,7 @@ export const SidebarDataList: FC<SidebarDataListProps> = ({
               </Folder>
             ))}
 
-            {folders.length > 0 && <Separator />}
+            {folders.length > 0 && <Separator className="my-2" />}
 
             {contentType === "chats" ? (
               <>
@@ -277,14 +277,14 @@ export const SidebarDataList: FC<SidebarDataListProps> = ({
                     return (
                       sortedData.length > 0 && (
                         <div key={dateCategory} className="pb-2">
-                          <div className="text-muted-foreground mb-1 text-sm font-bold">
+                          <div className="mb-1 px-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                             {dateCategory}
                           </div>
 
                           <div
                             className={cn(
-                              "flex grow flex-col",
-                              isDragOver && "bg-accent"
+                              "flex grow flex-col gap-0.5 rounded-lg",
+                              isDragOver && "bg-zinc-100 dark:bg-zinc-900"
                             )}
                             onDrop={handleDrop}
                             onDragEnter={handleDragEnter}
@@ -309,7 +309,10 @@ export const SidebarDataList: FC<SidebarDataListProps> = ({
               </>
             ) : (
               <div
-                className={cn("flex grow flex-col", isDragOver && "bg-accent")}
+                className={cn(
+                  "flex grow flex-col gap-0.5 rounded-lg",
+                  isDragOver && "bg-zinc-100 dark:bg-zinc-900"
+                )}
                 onDrop={handleDrop}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
@@ -333,7 +336,10 @@ export const SidebarDataList: FC<SidebarDataListProps> = ({
       </div>
 
       <div
-        className={cn("flex grow", isDragOver && "bg-accent")}
+        className={cn(
+          "min-h-[16px] flex-1 rounded-lg",
+          isDragOver && "bg-zinc-100/60 dark:bg-zinc-900/60"
+        )}
         onDrop={handleDrop}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}

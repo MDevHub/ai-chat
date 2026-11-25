@@ -43,7 +43,6 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
     setPrompts,
     setTools,
     setModels,
-    selectedWorkspace,
     setSelectedWorkspace,
     setSelectedChat,
     setChatMessages,
@@ -60,100 +59,74 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let isMounted = true
+
     ;(async () => {
       const session = (await supabase.auth.getSession()).data.session
 
       if (!session) {
         return router.push("/login")
-      } else {
-        await fetchWorkspaceData(workspaceId)
       }
+
+      if (!isMounted) return
+
+      setUserInput("")
+      setChatMessages([])
+      setSelectedChat(null)
+
+      setIsGenerating(false)
+      setFirstTokenReceived(false)
+
+      setChatFiles([])
+      setChatImages([])
+      setNewMessageFiles([])
+      setNewMessageImages([])
+      setShowFilesDisplay(false)
+
+      await fetchWorkspaceData(workspaceId)
     })()
-  }, [])
 
-  useEffect(() => {
-    ;(async () => await fetchWorkspaceData(workspaceId))()
-
-    setUserInput("")
-    setChatMessages([])
-    setSelectedChat(null)
-
-    setIsGenerating(false)
-    setFirstTokenReceived(false)
-
-    setChatFiles([])
-    setChatImages([])
-    setNewMessageFiles([])
-    setNewMessageImages([])
-    setShowFilesDisplay(false)
+    return () => {
+      isMounted = false
+    }
   }, [workspaceId])
 
   const fetchWorkspaceData = async (workspaceId: string) => {
     setLoading(true)
 
-    const workspace = await getWorkspaceById(workspaceId)
+    const [
+      workspace,
+      assistantData,
+      chats,
+      collectionData,
+      folders,
+      fileData,
+      presetData,
+      promptData,
+      toolData,
+      modelData
+    ] = await Promise.all([
+      getWorkspaceById(workspaceId),
+      getAssistantWorkspacesByWorkspaceId(workspaceId),
+      getChatsByWorkspaceId(workspaceId),
+      getCollectionWorkspacesByWorkspaceId(workspaceId),
+      getFoldersByWorkspaceId(workspaceId),
+      getFileWorkspacesByWorkspaceId(workspaceId),
+      getPresetWorkspacesByWorkspaceId(workspaceId),
+      getPromptWorkspacesByWorkspaceId(workspaceId),
+      getToolWorkspacesByWorkspaceId(workspaceId),
+      getModelWorkspacesByWorkspaceId(workspaceId)
+    ])
+
     setSelectedWorkspace(workspace)
-
-    const assistantData = await getAssistantWorkspacesByWorkspaceId(workspaceId)
     setAssistants(assistantData.assistants)
-
-    for (const assistant of assistantData.assistants) {
-      let url = ""
-
-      if (assistant.image_path) {
-        url = (await getAssistantImageFromStorage(assistant.image_path)) || ""
-      }
-
-      if (url) {
-        const response = await fetch(url)
-        const blob = await response.blob()
-        const base64 = await convertBlobToBase64(blob)
-
-        setAssistantImages(prev => [
-          ...prev,
-          {
-            assistantId: assistant.id,
-            path: assistant.image_path,
-            base64,
-            url
-          }
-        ])
-      } else {
-        setAssistantImages(prev => [
-          ...prev,
-          {
-            assistantId: assistant.id,
-            path: assistant.image_path,
-            base64: "",
-            url
-          }
-        ])
-      }
-    }
-
-    const chats = await getChatsByWorkspaceId(workspaceId)
     setChats(chats)
-
-    const collectionData =
-      await getCollectionWorkspacesByWorkspaceId(workspaceId)
     setCollections(collectionData.collections)
-
-    const folders = await getFoldersByWorkspaceId(workspaceId)
     setFolders(folders)
-
-    const fileData = await getFileWorkspacesByWorkspaceId(workspaceId)
     setFiles(fileData.files)
-
-    const presetData = await getPresetWorkspacesByWorkspaceId(workspaceId)
     setPresets(presetData.presets)
-
-    const promptData = await getPromptWorkspacesByWorkspaceId(workspaceId)
     setPrompts(promptData.prompts)
-
-    const toolData = await getToolWorkspacesByWorkspaceId(workspaceId)
     setTools(toolData.tools)
-
-    const modelData = await getModelWorkspacesByWorkspaceId(workspaceId)
     setModels(modelData.models)
 
     setChatSettings({
@@ -163,21 +136,69 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
       prompt:
         workspace?.default_prompt ||
         "You are a friendly, helpful AI assistant.",
-      temperature: workspace?.default_temperature || 0.5,
-      contextLength: workspace?.default_context_length || 4096,
-      includeProfileContext: workspace?.include_profile_context || true,
+      temperature: workspace?.default_temperature ?? 0.5,
+      contextLength: workspace?.default_context_length ?? 4096,
+      includeProfileContext: workspace?.include_profile_context ?? true,
       includeWorkspaceInstructions:
-        workspace?.include_workspace_instructions || true,
+        workspace?.include_workspace_instructions ?? true,
       embeddingsProvider:
         (workspace?.embeddings_provider as "openai" | "local") || "openai"
     })
 
     setLoading(false)
+
+    // Assistant avatars are non-critical: load them after the UI is interactive
+    // so slow networks don't block the whole workspace on image downloads.
+    const loadedImages = await Promise.all(
+      assistantData.assistants.map(async assistant => {
+        if (!assistant.image_path) {
+          return {
+            assistantId: assistant.id,
+            path: assistant.image_path,
+            base64: "",
+            url: ""
+          }
+        }
+
+        const url =
+          (await getAssistantImageFromStorage(assistant.image_path)) || ""
+
+        if (!url) {
+          return {
+            assistantId: assistant.id,
+            path: assistant.image_path,
+            base64: "",
+            url: ""
+          }
+        }
+
+        let base64 = ""
+        try {
+          const response = await fetch(url)
+          base64 = await convertBlobToBase64(await response.blob())
+        } catch {
+          // Fall back to the default assistant icon if the image can't load
+        }
+
+        return {
+          assistantId: assistant.id,
+          path: assistant.image_path,
+          base64,
+          url
+        }
+      })
+    )
+
+    setAssistantImages(loadedImages)
   }
 
   if (loading) {
     return <Loading />
   }
 
-  return <Dashboard>{children}</Dashboard>
+  return (
+    <div className="flex h-dvh w-full min-w-0 max-w-none self-stretch bg-zinc-50 text-zinc-900 dark:bg-[#0a0a0c] dark:text-zinc-100">
+      <Dashboard>{children}</Dashboard>
+    </div>
+  )
 }
