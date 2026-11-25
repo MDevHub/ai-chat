@@ -15,151 +15,61 @@ export const Announcements: FC<AnnouncementsProps> = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
 
   useEffect(() => {
-    // Load announcements from local storage
     const storedAnnouncements = localStorage.getItem("announcements")
-    let parsedAnnouncements: Announcement[] = []
-
-    if (storedAnnouncements) {
-      parsedAnnouncements = JSON.parse(storedAnnouncements)
-    }
-
-    // Filter out announcements that are no longer in state
-    const validAnnouncements = announcements.filter((a: Announcement) =>
-      parsedAnnouncements.find(storedA => storedA.id === a.id)
-    )
-
-    // Add new announcements to the list
-    const newAnnouncements = announcements.filter(
-      (a: Announcement) =>
-        !parsedAnnouncements.find(storedA => storedA.id === a.id)
-    )
-
-    // Combine valid and new announcements
-    const combinedAnnouncements = [...validAnnouncements, ...newAnnouncements]
-
-    // Mark announcements as read if they are marked as read in local storage
-    const updatedAnnouncements = combinedAnnouncements.map(
-      (a: Announcement) => {
-        const storedAnnouncement = parsedAnnouncements.find(
-          (storedA: Announcement) => storedA.id === a.id
-        )
-        return storedAnnouncement?.read ? { ...a, read: true } : a
-      }
-    )
-
-    // Update state and local storage
-    setAnnouncements(updatedAnnouncements)
-    localStorage.setItem("announcements", JSON.stringify(updatedAnnouncements))
+    let parsedAnnouncements: Announcement[] = storedAnnouncements
+      ? JSON.parse(storedAnnouncements)
+      : []
+    setAnnouncements(parsedAnnouncements)
   }, [])
 
   const unreadCount = announcements.filter(a => !a.read).length
 
   const markAsRead = (id: string) => {
-    // Mark announcement as read in local storage and state
-    const updatedAnnouncements = announcements.map(a =>
+    const updated = announcements.map(a =>
       a.id === id ? { ...a, read: true } : a
     )
-    setAnnouncements(updatedAnnouncements)
-    localStorage.setItem("announcements", JSON.stringify(updatedAnnouncements))
-  }
-
-  const markAllAsRead = () => {
-    // Mark all announcements as read in local storage and state
-    const updatedAnnouncements = announcements.map(a => ({ ...a, read: true }))
-    setAnnouncements(updatedAnnouncements)
-    localStorage.setItem("announcements", JSON.stringify(updatedAnnouncements))
-  }
-
-  const markAllAsUnread = () => {
-    // Mark all announcements as unread in local storage and state
-    const updatedAnnouncements = announcements.map(a => ({ ...a, read: false }))
-    setAnnouncements(updatedAnnouncements)
-    localStorage.setItem("announcements", JSON.stringify(updatedAnnouncements))
+    setAnnouncements(updated)
+    localStorage.setItem("announcements", JSON.stringify(updated))
   }
 
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <div className="relative cursor-pointer hover:opacity-50">
-          <IconSpeakerphone size={SIDEBAR_ICON_SIZE} />
+        <div className="relative cursor-pointer text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
+          <IconSpeakerphone size={SIDEBAR_ICON_SIZE - 2} />
           {unreadCount > 0 && (
-            <div className="notification-indicator absolute right-[-4px] top-[-4px] flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+            <div className="absolute -right-1 -top-1 flex size-3.5 items-center justify-center rounded-full bg-sky-500 font-mono text-[9px] text-white">
               {unreadCount}
             </div>
           )}
         </div>
       </PopoverTrigger>
-      <PopoverContent className="mb-2 w-80" side="top">
-        <div className="grid gap-4">
-          <div>
-            <div className="mb-4 text-left text-xl font-bold leading-none">
-              Updates
-            </div>
-
-            <div className="grid space-y-4">
-              {announcements
-                .filter(a => !a.read)
-                .map((a: Announcement) => (
-                  <div key={a.id}>
-                    <div className="block select-none rounded-md border p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium leading-none">
-                          {a.title}
-                        </div>
-                        <div className="text-muted-foreground text-xs leading-snug">
-                          {a.date}
-                        </div>
-                      </div>
-                      <div className="text-muted-foreground mt-3 text-sm leading-snug">
-                        {a.content}
-                      </div>
-
-                      <div className="mt-3 space-x-2">
-                        <Button
-                          className="h-[26px] text-xs"
-                          size="sm"
-                          onClick={() => markAsRead(a.id)}
-                        >
-                          Mark as Read
-                        </Button>
-
-                        {a.link && (
-                          <a href={a.link} target="_blank" rel="noreferrer">
-                            <Button className="h-[26px] text-xs" size="sm">
-                              Demo{" "}
-                              <IconExternalLink className="ml-1" size={14} />
-                            </Button>
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-
-            <div className="mt-1">
-              {unreadCount > 0 ? (
-                <Button
-                  className="mt-2"
-                  variant="outline"
-                  onClick={markAllAsRead}
+      <PopoverContent
+        className="w-80 rounded-2xl border border-zinc-200/90 bg-white/95 p-4 shadow-xl backdrop-blur-xl dark:border-zinc-800/90 dark:bg-zinc-900/95"
+        side="top"
+      >
+        <div className="space-y-3">
+          <div className="font-mono text-sm font-semibold tracking-tight">
+            Updates
+          </div>
+          <div className="space-y-2 text-xs text-zinc-600 dark:text-zinc-300">
+            {announcements.length === 0 ? (
+              <div className="font-mono text-zinc-400">
+                You are all caught up!
+              </div>
+            ) : (
+              announcements.map(a => (
+                <div
+                  key={a.id}
+                  className="rounded-xl border border-zinc-200/80 p-3 dark:border-zinc-800"
                 >
-                  Mark All as Read
-                </Button>
-              ) : (
-                <div className="text-muted-foreground text-sm leading-snug">
-                  You are all caught up!
-                  {announcements.length > 0 && (
-                    <div
-                      className="mt-6 cursor-pointer underline"
-                      onClick={() => markAllAsUnread()}
-                    >
-                      Show recent updates
-                    </div>
-                  )}
+                  <div className="font-semibold">{a.title}</div>
+                  <div className="mt-1 text-[11px] text-zinc-500">
+                    {a.content}
+                  </div>
                 </div>
-              )}
-            </div>
+              ))
+            )}
           </div>
         </div>
       </PopoverContent>

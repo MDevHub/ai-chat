@@ -2,7 +2,6 @@ import { ChatbotUIContext } from "@/context/context"
 import { Tables } from "@/supabase/types"
 import { ContentType } from "@/types"
 import { FC, useContext } from "react"
-import { SIDEBAR_WIDTH } from "../ui/dashboard"
 import { TabsContent } from "../ui/tabs"
 import { WorkspaceSwitcher } from "../utility/workspace-switcher"
 import { WorkspaceSettings } from "../workspace/workspace-settings"
@@ -13,7 +12,7 @@ interface SidebarProps {
   showSidebar: boolean
 }
 
-export const Sidebar: FC<SidebarProps> = ({ contentType, showSidebar }) => {
+export const Sidebar: FC<SidebarProps> = ({ contentType }) => {
   const {
     folders,
     chats,
@@ -51,18 +50,14 @@ export const Sidebar: FC<SidebarProps> = ({ contentType, showSidebar }) => {
 
   return (
     <TabsContent
-      className="m-0 w-full space-y-2"
-      style={{
-        // Sidebar - SidebarSwitcher
-        minWidth: showSidebar ? `calc(${SIDEBAR_WIDTH}px - 60px)` : "0px",
-        maxWidth: showSidebar ? `calc(${SIDEBAR_WIDTH}px - 60px)` : "0px",
-        width: showSidebar ? `calc(${SIDEBAR_WIDTH}px - 60px)` : "0px"
-      }}
+      className="m-0 flex h-full min-w-0 flex-1 flex-col data-[state=inactive]:hidden"
       value={contentType}
     >
-      <div className="flex h-full flex-col p-3">
-        <div className="flex items-center border-b-2 pb-2">
-          <WorkspaceSwitcher />
+      <div className="flex size-full flex-col p-3">
+        <div className="flex items-center gap-1.5 border-b border-zinc-200/80 pb-2.5 dark:border-zinc-800/80">
+          <div className="min-w-0 flex-1">
+            <WorkspaceSwitcher />
+          </div>
 
           <WorkspaceSettings />
         </div>

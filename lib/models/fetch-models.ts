@@ -34,12 +34,18 @@ export const fetchHostedModels = async (profile: Tables<"profiles">) => {
         providerKey = `${provider}_api_key` as keyof typeof profile
       }
 
-      if (profile?.[providerKey] || data.isUsingEnvKeyMap[provider]) {
-        const models = LLM_LIST_MAP[provider]
+      const models = LLM_LIST_MAP[provider]
+      if (!Array.isArray(models)) continue
 
-        if (Array.isArray(models)) {
-          modelsToAdd.push(...models)
-        }
+      if (profile?.[providerKey]) {
+        // Own key: every model for this provider
+        modelsToAdd.push(...models)
+      } else if (data.demoModels?.[provider]) {
+        // Free demo on the server key: only the cheap demo model is served
+        const demoModel = models.find(
+          m => m.modelId === data.demoModels[provider]
+        )
+        if (demoModel) modelsToAdd.push(demoModel)
       }
     }
 

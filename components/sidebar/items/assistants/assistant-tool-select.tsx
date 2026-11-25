@@ -35,7 +35,7 @@ export const AssistantToolSelect: FC<AssistantToolSelectProps> = ({
     if (isOpen) {
       setTimeout(() => {
         inputRef.current?.focus()
-      }, 100) // FIX: hacky
+      }, 100)
     }
   }, [isOpen])
 
@@ -53,32 +53,25 @@ export const AssistantToolSelect: FC<AssistantToolSelectProps> = ({
         setSearch("")
       }}
     >
-      <DropdownMenuTrigger
-        className="bg-background w-full justify-start border-2 px-3 py-5"
-        asChild
-      >
+      <DropdownMenuTrigger asChild>
         <Button
           ref={triggerRef}
-          className="flex items-center justify-between"
-          variant="ghost"
+          variant="outline"
+          className="flex h-9 w-full items-center justify-between rounded-lg border-zinc-200 bg-zinc-50/50 px-3 font-mono text-xs text-zinc-700 hover:bg-zinc-100/70 dark:border-zinc-800 dark:bg-zinc-950/50 dark:text-zinc-300 dark:hover:bg-zinc-900"
         >
-          <div className="flex items-center">
-            <div className="ml-2 flex items-center">
-              {selectedAssistantTools.length} tools selected
-            </div>
-          </div>
-
-          <IconChevronDown />
+          <span>{selectedAssistantTools.length} tools selected</span>
+          <IconChevronDown className="size-3.5 text-zinc-400" />
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         style={{ width: triggerRef.current?.offsetWidth }}
-        className="space-y-2 overflow-auto p-2"
+        className="space-y-1.5 rounded-xl border-zinc-200/90 bg-white/95 p-2 shadow-xl backdrop-blur-xl dark:border-zinc-800/90 dark:bg-zinc-900/95"
         align="start"
       >
         <Input
           ref={inputRef}
+          className="h-8 rounded-lg border-zinc-200 bg-zinc-50/70 px-2.5 text-xs dark:border-zinc-800 dark:bg-zinc-950/70"
           placeholder="Search tools..."
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -136,25 +129,24 @@ const AssistantToolItem: FC<AssistantToolItemProps> = ({
   selected,
   onSelect
 }) => {
-  const handleSelect = () => {
-    onSelect(tool)
-  }
-
   return (
     <div
-      className="flex cursor-pointer items-center justify-between py-0.5 hover:opacity-50"
-      onClick={handleSelect}
+      className="flex cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-xs transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/70"
+      onClick={() => onSelect(tool)}
     >
       <div className="flex grow items-center truncate">
-        <div className="mr-2 min-w-[24px]">
-          <IconBolt size={24} />
+        <div className="mr-2 shrink-0 text-zinc-500">
+          <IconBolt size={16} />
         </div>
 
-        <div className="truncate">{tool.name}</div>
+        <div className="truncate font-medium">{tool.name}</div>
       </div>
 
       {selected && (
-        <IconCircleCheckFilled size={20} className="min-w-[30px] flex-none" />
+        <IconCircleCheckFilled
+          size={16}
+          className="ml-2 shrink-0 text-sky-500"
+        />
       )}
     </div>
   )

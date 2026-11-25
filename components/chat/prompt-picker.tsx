@@ -82,7 +82,6 @@ export const PromptPicker: FC<PromptPickerProps> = ({}) => {
         e.preventDefault()
         itemsRef.current[0]?.focus()
       } else if (e.key === "ArrowUp" && !e.shiftKey && index === 0) {
-        // go to last element if arrow up is pressed on first element
         e.preventDefault()
         itemsRef.current[itemsRef.current.length - 1]?.focus()
       } else if (e.key === "ArrowUp") {
@@ -136,32 +135,40 @@ export const PromptPicker: FC<PromptPickerProps> = ({}) => {
   return (
     <>
       {isPromptPickerOpen && (
-        <div className="bg-background flex flex-col space-y-1 rounded-xl border-2 p-2 text-sm">
+        <div className="flex flex-col space-y-1 rounded-2xl border border-zinc-200/90 bg-white/95 p-2 shadow-xl backdrop-blur-xl dark:border-zinc-800/90 dark:bg-zinc-900/95">
           {showPromptVariables ? (
             <Dialog
               open={showPromptVariables}
               onOpenChange={setShowPromptVariables}
             >
-              <DialogContent onKeyDown={handleKeydownPromptVariables}>
-                <DialogHeader>
-                  <DialogTitle>Enter Prompt Variables</DialogTitle>
+              <DialogContent
+                onKeyDown={handleKeydownPromptVariables}
+                className="w-full max-w-sm rounded-2xl border border-zinc-200/90 bg-white/95 p-6 shadow-xl backdrop-blur-xl dark:border-zinc-800/90 dark:bg-zinc-900/95"
+              >
+                <DialogHeader className="text-left">
+                  <DialogTitle className="text-base font-semibold">
+                    Enter Prompt Variables
+                  </DialogTitle>
                 </DialogHeader>
 
-                <div className="mt-2 space-y-6">
+                <div className="mt-2 space-y-4">
                   {promptVariables.map((variable, index) => (
-                    <div key={index} className="flex flex-col space-y-2">
-                      <Label>{variable.name}</Label>
+                    <div key={index} className="space-y-1.5">
+                      <Label className="font-mono text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                        {variable.name}
+                      </Label>
 
                       <TextareaAutosize
-                        placeholder={`Enter a value for ${variable.name}...`}
+                        placeholder={`Value for ${variable.name}...`}
                         value={variable.value}
                         onValueChange={value => {
                           const newPromptVariables = [...promptVariables]
                           newPromptVariables[index].value = value
                           setPromptVariables(newPromptVariables)
                         }}
-                        minRows={3}
-                        maxRows={5}
+                        minRows={2}
+                        maxRows={4}
+                        className="w-full rounded-lg border border-zinc-200 bg-zinc-50/50 p-3 text-xs placeholder:text-zinc-400 focus-visible:ring-1 focus-visible:ring-sky-500 dark:border-zinc-800 dark:bg-zinc-950/50"
                         onCompositionStart={() => setIsTyping(true)}
                         onCompositionEnd={() => setIsTyping(false)}
                       />
@@ -169,23 +176,28 @@ export const PromptPicker: FC<PromptPickerProps> = ({}) => {
                   ))}
                 </div>
 
-                <div className="mt-2 flex justify-end space-x-2">
+                <div className="mt-4 flex gap-2 sm:justify-end">
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={handleCancelPromptVariables}
+                    className="h-9 rounded-lg border-zinc-200 bg-transparent font-mono text-xs dark:border-zinc-800"
                   >
                     Cancel
                   </Button>
 
-                  <Button size="sm" onClick={handleSubmitPromptVariables}>
+                  <Button
+                    size="sm"
+                    onClick={handleSubmitPromptVariables}
+                    className="h-9 rounded-lg bg-zinc-900 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                  >
                     Submit
                   </Button>
                 </div>
               </DialogContent>
             </Dialog>
           ) : filteredPrompts.length === 0 ? (
-            <div className="text-md flex h-14 cursor-pointer items-center justify-center italic hover:opacity-50">
+            <div className="flex h-12 cursor-pointer items-center justify-center font-mono text-xs italic text-zinc-400">
               No matching prompts.
             </div>
           ) : (
@@ -196,13 +208,14 @@ export const PromptPicker: FC<PromptPickerProps> = ({}) => {
                   itemsRef.current[index] = ref
                 }}
                 tabIndex={0}
-                className="hover:bg-accent focus:bg-accent flex cursor-pointer flex-col rounded p-2 focus:outline-none"
+                className="flex cursor-pointer flex-col rounded-xl p-2.5 transition-colors hover:bg-zinc-100 focus:bg-zinc-100 focus:outline-none dark:hover:bg-zinc-800/80 dark:focus:bg-zinc-800/80"
                 onClick={() => callSelectPrompt(prompt)}
                 onKeyDown={getKeyDownHandler(index)}
               >
-                <div className="font-bold">{prompt.name}</div>
-
-                <div className="truncate text-sm opacity-80">
+                <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  {prompt.name}
+                </div>
+                <div className="truncate text-[11px] text-zinc-500 dark:text-zinc-400">
                   {prompt.content}
                 </div>
               </div>

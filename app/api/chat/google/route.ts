@@ -1,4 +1,10 @@
-import { checkApiKey, getServerProfile } from "@/lib/server/server-chat-helpers"
+import {
+  ChatRouteError,
+  DEMO_MAX_OUTPUT_TOKENS,
+  demoHeaders,
+  resolveChatCredentials
+} from "@/lib/server/demo"
+import { getServerProfile } from "@/lib/server/server-chat-helpers"
 import { ChatSettings } from "@/types"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 
@@ -14,17 +20,26 @@ export async function POST(request: Request) {
   try {
     const profile = await getServerProfile()
 
-    checkApiKey(profile.google_gemini_api_key, "Google")
+    const { apiKey, demo } = await resolveChatCredentials(
+      "google",
+      profile,
+      request,
+      messages
+    )
 
-    const genAI = new GoogleGenerativeAI(profile.google_gemini_api_key || "")
-    const googleModel = genAI.getGenerativeModel({ model: chatSettings.model })
+    const genAI = new GoogleGenerativeAI(apiKey)
+    // Demo requests always run on the cheap demo model with a capped reply
+    const googleModel = genAI.getGenerativeModel({
+      model: demo?.model ?? chatSettings.model
+    })
 
     const lastMessage = messages.pop()
 
     const chat = googleModel.startChat({
       history: messages,
       generationConfig: {
-        temperature: chatSettings.temperature
+        temperature: chatSettings.temperature,
+        ...(demo && { maxOutputTokens: DEMO_MAX_OUTPUT_TOKENS })
       }
     })
 
@@ -42,10 +57,11 @@ export async function POST(request: Request) {
     })
 
     return new Response(readableStream, {
-      headers: { "Content-Type": "text/plain" }
+      headers: { "Content-Type": "text/plain", ...demoHeaders(demo) }
     })
-
   } catch (error: any) {
+    if (error instanceof ChatRouteError) return error.toResponse()
+
     let errorMessage = error.message || "An unexpected error occurred"
     const errorCode = error.status || 500
 

@@ -36,6 +36,12 @@ interface APIStepProps {
   onUseAzureOpenaiChange: (value: boolean) => void
 }
 
+const inputClass =
+  "h-9 rounded-lg border-zinc-200 bg-zinc-50/50 px-3 font-mono text-xs placeholder:text-zinc-400 focus-visible:ring-1 focus-visible:ring-sky-500 dark:border-zinc-800 dark:bg-zinc-950/50 dark:placeholder:text-zinc-600"
+
+const labelClass =
+  "font-mono text-xs font-medium text-zinc-600 dark:text-zinc-400"
+
 export const APIStep: FC<APIStepProps> = ({
   openaiAPIKey,
   openaiOrgID,
@@ -69,27 +75,26 @@ export const APIStep: FC<APIStepProps> = ({
   onOpenrouterAPIKeyChange
 }) => {
   return (
-    <>
-      <div className="mt-5 space-y-2">
-        <Label className="flex items-center">
-          <div>
+    <div className="space-y-4">
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <Label className={labelClass}>
             {useAzureOpenai ? "Azure OpenAI API Key" : "OpenAI API Key"}
-          </div>
+          </Label>
 
           <Button
-            className="ml-3 h-[18px] w-[150px] text-[11px]"
+            type="button"
+            variant="outline"
+            className="h-6 rounded-md border-zinc-200 bg-zinc-100/70 px-2.5 font-mono text-[10px] text-zinc-600 hover:bg-zinc-200/70 dark:border-zinc-800 dark:bg-zinc-800/70 dark:text-zinc-300 dark:hover:bg-zinc-800"
             onClick={() => onUseAzureOpenaiChange(!useAzureOpenai)}
           >
-            {useAzureOpenai
-              ? "Switch To Standard OpenAI"
-              : "Switch To Azure OpenAI"}
+            {useAzureOpenai ? "Use Standard OpenAI" : "Use Azure OpenAI"}
           </Button>
-        </Label>
+        </div>
 
         <Input
-          placeholder={
-            useAzureOpenai ? "Azure OpenAI API Key" : "OpenAI API Key"
-          }
+          className={inputClass}
+          placeholder={useAzureOpenai ? "Azure key..." : "sk-..."}
           type="password"
           value={useAzureOpenai ? azureOpenaiAPIKey : openaiAPIKey}
           onChange={e =>
@@ -100,13 +105,13 @@ export const APIStep: FC<APIStepProps> = ({
         />
       </div>
 
-      <div className="ml-8 space-y-3">
+      <div className="space-y-3 border-l border-zinc-200 pl-3.5 dark:border-zinc-800">
         {useAzureOpenai ? (
           <>
             <div className="space-y-1">
-              <Label>Azure OpenAI Endpoint</Label>
-
+              <Label className={labelClass}>Azure OpenAI Endpoint</Label>
               <Input
+                className={inputClass}
                 placeholder="https://your-endpoint.openai.azure.com"
                 type="password"
                 value={azureOpenaiEndpoint}
@@ -115,10 +120,12 @@ export const APIStep: FC<APIStepProps> = ({
             </div>
 
             <div className="space-y-1">
-              <Label>Azure OpenAI GPT-3.5 Turbo ID</Label>
-
+              <Label className={labelClass}>
+                Azure OpenAI GPT-3.5 Turbo ID
+              </Label>
               <Input
-                placeholder="Azure OpenAI GPT-3.5 Turbo ID"
+                className={inputClass}
+                placeholder="Deployment ID"
                 type="password"
                 value={azureOpenai35TurboID}
                 onChange={e => onAzureOpenai35TurboIDChange(e.target.value)}
@@ -126,10 +133,12 @@ export const APIStep: FC<APIStepProps> = ({
             </div>
 
             <div className="space-y-1">
-              <Label>Azure OpenAI GPT-4.5 Turbo ID</Label>
-
+              <Label className={labelClass}>
+                Azure OpenAI GPT-4.5 Turbo ID
+              </Label>
               <Input
-                placeholder="Azure OpenAI GPT-4.5 Turbo ID"
+                className={inputClass}
+                placeholder="Deployment ID"
                 type="password"
                 value={azureOpenai45TurboID}
                 onChange={e => onAzureOpenai45TurboIDChange(e.target.value)}
@@ -137,10 +146,12 @@ export const APIStep: FC<APIStepProps> = ({
             </div>
 
             <div className="space-y-1">
-              <Label>Azure OpenAI GPT-4.5 Vision ID</Label>
-
+              <Label className={labelClass}>
+                Azure OpenAI GPT-4.5 Vision ID
+              </Label>
               <Input
-                placeholder="Azure OpenAI GPT-4.5 Vision ID"
+                className={inputClass}
+                placeholder="Deployment ID"
                 type="password"
                 value={azureOpenai45VisionID}
                 onChange={e => onAzureOpenai45VisionIDChange(e.target.value)}
@@ -148,10 +159,10 @@ export const APIStep: FC<APIStepProps> = ({
             </div>
 
             <div className="space-y-1">
-              <Label>Azure OpenAI Embeddings ID</Label>
-
+              <Label className={labelClass}>Azure OpenAI Embeddings ID</Label>
               <Input
-                placeholder="Azure OpenAI Embeddings ID"
+                className={inputClass}
+                placeholder="Deployment ID"
                 type="password"
                 value={azureOpenaiEmbeddingsID}
                 onChange={e => onAzureOpenaiEmbeddingsIDChange(e.target.value)}
@@ -159,85 +170,86 @@ export const APIStep: FC<APIStepProps> = ({
             </div>
           </>
         ) : (
-          <>
-            <div className="space-y-1">
-              <Label>OpenAI Organization ID</Label>
-
-              <Input
-                placeholder="OpenAI Organization ID (optional)"
-                type="password"
-                value={openaiOrgID}
-                onChange={e => onOpenaiOrgIDChange(e.target.value)}
-              />
-            </div>
-          </>
+          <div className="space-y-1">
+            <Label className={labelClass}>OpenAI Organization ID</Label>
+            <Input
+              className={inputClass}
+              placeholder="org-... (optional)"
+              type="password"
+              value={openaiOrgID}
+              onChange={e => onOpenaiOrgIDChange(e.target.value)}
+            />
+          </div>
         )}
       </div>
 
-      <div className="space-y-1">
-        <Label>Anthropic API Key</Label>
-
+      <div className="space-y-1.5">
+        <Label className={labelClass}>Anthropic API Key</Label>
         <Input
-          placeholder="Anthropic API Key"
+          className={inputClass}
+          placeholder="sk-ant-..."
           type="password"
           value={anthropicAPIKey}
           onChange={e => onAnthropicAPIKeyChange(e.target.value)}
         />
       </div>
 
-      <div className="space-y-1">
-        <Label>Google Gemini API Key</Label>
-
+      <div className="space-y-1.5">
+        <Label className={labelClass}>Google Gemini API Key</Label>
         <Input
-          placeholder="Google Gemini API Key"
+          className={inputClass}
+          placeholder="AIza..."
           type="password"
           value={googleGeminiAPIKey}
           onChange={e => onGoogleGeminiAPIKeyChange(e.target.value)}
         />
       </div>
 
-      <div className="space-y-1">
-        <Label>Mistral API Key</Label>
-
+      <div className="space-y-1.5">
+        <Label className={labelClass}>OpenRouter API Key</Label>
         <Input
-          placeholder="Mistral API Key"
-          type="password"
-          value={mistralAPIKey}
-          onChange={e => onMistralAPIKeyChange(e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-1">
-        <Label>Groq API Key</Label>
-
-        <Input
-          placeholder="Groq API Key"
-          type="password"
-          value={groqAPIKey}
-          onChange={e => onGroqAPIKeyChange(e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-1">
-        <Label>Perplexity API Key</Label>
-
-        <Input
-          placeholder="Perplexity API Key"
-          type="password"
-          value={perplexityAPIKey}
-          onChange={e => onPerplexityAPIKeyChange(e.target.value)}
-        />
-      </div>
-      <div className="space-y-1">
-        <Label>OpenRouter API Key</Label>
-
-        <Input
-          placeholder="OpenRouter API Key"
+          className={inputClass}
+          placeholder="sk-or-..."
           type="password"
           value={openrouterAPIKey}
           onChange={e => onOpenrouterAPIKeyChange(e.target.value)}
         />
       </div>
-    </>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="space-y-1.5">
+          <Label className={labelClass}>Groq</Label>
+          <Input
+            className={inputClass}
+            placeholder="gsk_..."
+            type="password"
+            value={groqAPIKey}
+            onChange={e => onGroqAPIKeyChange(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className={labelClass}>Mistral</Label>
+          <Input
+            className={inputClass}
+            placeholder="API Key"
+            type="password"
+            value={mistralAPIKey}
+            onChange={e => onMistralAPIKeyChange(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className={labelClass}>Perplexity</Label>
+          <Input
+            className={inputClass}
+            placeholder="pplx-..."
+            type="password"
+            value={perplexityAPIKey}
+            onChange={e => onPerplexityAPIKeyChange(e.target.value)}
+          />
+        </div>
+      </div>
+    </div>
   )
 }

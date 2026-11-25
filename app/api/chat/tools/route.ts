@@ -1,5 +1,11 @@
 import { openapiToFunctions } from "@/lib/openapi-conversion"
-import { checkApiKey, getServerProfile } from "@/lib/server/server-chat-helpers"
+import {
+  ChatRouteError,
+  DEMO_MAX_OUTPUT_TOKENS,
+  demoHeaders,
+  resolveChatCredentials
+} from "@/lib/server/demo"
+import { getServerProfile } from "@/lib/server/server-chat-helpers"
 import { Tables } from "@/supabase/types"
 import { ChatSettings } from "@/types"
 import { OpenAIStream, StreamingTextResponse } from "ai"
@@ -17,12 +23,19 @@ export async function POST(request: Request) {
   try {
     const profile = await getServerProfile()
 
-    checkApiKey(profile.openai_api_key, "OpenAI")
+    const { apiKey, organization, demo } = await resolveChatCredentials(
+      "openai",
+      profile,
+      request,
+      messages
+    )
 
-    const openai = new OpenAI({
-      apiKey: profile.openai_api_key || "",
-      organization: profile.openai_organization_id
-    })
+    const openai = new OpenAI({ apiKey, organization })
+
+    // Demo requests always run on the cheap demo model with capped replies
+    const model = (demo?.model ??
+      chatSettings.model) as ChatCompletionCreateParamsBase["model"]
+    const maxTokens = demo ? DEMO_MAX_OUTPUT_TOKENS : undefined
 
     let allTools: OpenAI.Chat.Completions.ChatCompletionTool[] = []
     let allRouteMaps = {}
@@ -60,8 +73,9 @@ export async function POST(request: Request) {
     }
 
     const firstResponse = await openai.chat.completions.create({
-      model: chatSettings.model as ChatCompletionCreateParamsBase["model"],
+      model,
       messages,
+      max_tokens: maxTokens,
       tools: allTools.length > 0 ? allTools : undefined
     })
 
@@ -72,7 +86,8 @@ export async function POST(request: Request) {
     if (toolCalls.length === 0) {
       return new Response(message.content, {
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          ...demoHeaders(demo)
         }
       })
     }
@@ -199,15 +214,17 @@ export async function POST(request: Request) {
     }
 
     const secondResponse = await openai.chat.completions.create({
-      model: chatSettings.model as ChatCompletionCreateParamsBase["model"],
+      model,
       messages,
+      max_tokens: maxTokens,
       stream: true
     })
 
     const stream = OpenAIStream(secondResponse)
 
-    return new StreamingTextResponse(stream)
+    return new StreamingTextResponse(stream, { headers: demoHeaders(demo) })
   } catch (error: any) {
+    if (error instanceof ChatRouteError) return error.toResponse()
     console.error(error)
     const errorMessage = error.error?.message || "An unexpected error occurred"
     const errorCode = error.status || 500

@@ -1,3 +1,4 @@
+import { onOpenProfileSettings } from "@/lib/demo-usage-store"
 import { ChatbotUIContext } from "@/context/context"
 import {
   PROFILE_CONTEXT_MAX,
@@ -19,11 +20,12 @@ import {
   IconFileDownload,
   IconLoader2,
   IconLogout,
+  IconTerminal2,
   IconUser
 } from "@tabler/icons-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { FC, useCallback, useContext, useRef, useState } from "react"
+import { FC, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { SIDEBAR_ICON_SIZE } from "../sidebar/sidebar-switcher"
 import { Button } from "../ui/button"
@@ -41,9 +43,16 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { TextareaAutosize } from "../ui/textarea-autosize"
 import { WithTooltip } from "../ui/with-tooltip"
+import { GuestUpgrade } from "./guest-upgrade"
 import { ThemeSwitcher } from "./theme-switcher"
 
 interface ProfileSettingsProps {}
+
+const inputClass =
+  "h-9 rounded-lg border-zinc-200 bg-zinc-50/50 px-3 text-xs placeholder:text-zinc-400 focus-visible:ring-1 focus-visible:ring-sky-500 dark:border-zinc-800 dark:bg-zinc-950/50"
+
+const labelClass =
+  "font-mono text-xs font-medium text-zinc-600 dark:text-zinc-400"
 
 export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
   const {
@@ -60,6 +69,9 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
 
   const [isOpen, setIsOpen] = useState(false)
+
+  // Lets the free-demo banner open this sheet directly
+  useEffect(() => onOpenProfileSettings(() => setIsOpen(true)), [])
 
   const [displayName, setDisplayName] = useState(profile?.display_name || "")
   const [username, setUsername] = useState(profile?.username || "")
@@ -113,7 +125,6 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
   const [perplexityAPIKey, setPerplexityAPIKey] = useState(
     profile?.perplexity_api_key || ""
   )
-
   const [openrouterAPIKey, setOpenrouterAPIKey] = useState(
     profile?.openrouter_api_key || ""
   )
@@ -161,81 +172,17 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
     })
 
     setProfile(updatedProfile)
-
     toast.success("Profile updated!")
-
-    const providers = [
-      "openai",
-      "google",
-      "azure",
-      "anthropic",
-      "mistral",
-      "groq",
-      "perplexity",
-      "openrouter"
-    ]
-
-    providers.forEach(async provider => {
-      let providerKey: keyof typeof profile
-
-      if (provider === "google") {
-        providerKey = "google_gemini_api_key"
-      } else if (provider === "azure") {
-        providerKey = "azure_openai_api_key"
-      } else {
-        providerKey = `${provider}_api_key` as keyof typeof profile
-      }
-
-      const models = LLM_LIST_MAP[provider]
-      const envKeyActive = envKeyMap[provider]
-
-      if (!envKeyActive) {
-        const hasApiKey = !!updatedProfile[providerKey]
-
-        if (provider === "openrouter") {
-          if (hasApiKey && availableOpenRouterModels.length === 0) {
-            const openrouterModels: OpenRouterLLM[] =
-              await fetchOpenRouterModels()
-            setAvailableOpenRouterModels(prev => {
-              const newModels = openrouterModels.filter(
-                model =>
-                  !prev.some(prevModel => prevModel.modelId === model.modelId)
-              )
-              return [...prev, ...newModels]
-            })
-          } else {
-            setAvailableOpenRouterModels([])
-          }
-        } else {
-          if (hasApiKey && Array.isArray(models)) {
-            setAvailableHostedModels(prev => {
-              const newModels = models.filter(
-                model =>
-                  !prev.some(prevModel => prevModel.modelId === model.modelId)
-              )
-              return [...prev, ...newModels]
-            })
-          } else if (!hasApiKey && Array.isArray(models)) {
-            setAvailableHostedModels(prev =>
-              prev.filter(model => !models.includes(model))
-            )
-          }
-        }
-      }
-    })
-
     setIsOpen(false)
   }
 
   const debounce = (func: (...args: any[]) => void, wait: number) => {
     let timeout: NodeJS.Timeout | null
-
     return (...args: any[]) => {
       const later = () => {
         if (timeout) clearTimeout(timeout)
         func(...args)
       }
-
       if (timeout) clearTimeout(timeout)
       timeout = setTimeout(later, wait)
     }
@@ -244,51 +191,34 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
   const checkUsernameAvailability = useCallback(
     debounce(async (username: string) => {
       if (!username) return
-
-      if (username.length < PROFILE_USERNAME_MIN) {
+      if (
+        username.length < PROFILE_USERNAME_MIN ||
+        username.length > PROFILE_USERNAME_MAX
+      ) {
         setUsernameAvailable(false)
         return
       }
-
-      if (username.length > PROFILE_USERNAME_MAX) {
-        setUsernameAvailable(false)
-        return
-      }
-
       const usernameRegex = /^[a-zA-Z0-9_]+$/
       if (!usernameRegex.test(username)) {
         setUsernameAvailable(false)
-        toast.error(
-          "Username must be letters, numbers, or underscores only - no other characters or spacing allowed."
-        )
+        toast.error("Username must be letters, numbers, or underscores only.")
         return
       }
-
       setLoadingUsername(true)
-
       const response = await fetch(`/api/username/available`, {
         method: "POST",
         body: JSON.stringify({ username })
       })
-
       const data = await response.json()
-      const isAvailable = data.isAvailable
-
-      setUsernameAvailable(isAvailable)
-
-      if (username === profile?.username) {
-        setUsernameAvailable(true)
-      }
-
+      setUsernameAvailable(data.isAvailable)
+      if (username === profile?.username) setUsernameAvailable(true)
       setLoadingUsername(false)
     }, 500),
     []
   )
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Enter") {
-      buttonRef.current?.click()
-    }
+    if (e.key === "Enter") buttonRef.current?.click()
   }
 
   if (!profile) return null
@@ -298,462 +228,274 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
       <SheetTrigger asChild>
         {profile.image_url ? (
           <Image
-            className="mt-2 size-[34px] cursor-pointer rounded hover:opacity-50"
-            src={profile.image_url + "?" + new Date().getTime()}
-            height={34}
-            width={34}
-            alt={"Image"}
+            className="size-8 cursor-pointer rounded-lg object-cover transition-opacity hover:opacity-75"
+            src={`${profile.image_url}?v=${encodeURIComponent(profile.updated_at ?? "")}`}
+            height={32}
+            width={32}
+            alt={"Profile"}
           />
         ) : (
-          <Button size="icon" variant="ghost">
-            <IconUser size={SIDEBAR_ICON_SIZE} />
+          <Button
+            size="icon"
+            variant="ghost"
+            className="size-8 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+          >
+            <IconUser size={18} />
           </Button>
         )}
       </SheetTrigger>
 
       <SheetContent
-        className="flex flex-col justify-between"
+        className="flex w-full flex-col justify-between border-r border-zinc-200/80 bg-white/95 p-0 backdrop-blur-xl sm:max-w-[460px] dark:border-zinc-800/80 dark:bg-zinc-950/95"
         side="left"
         onKeyDown={handleKeyDown}
       >
-        <div className="grow overflow-auto">
-          <SheetHeader>
-            <SheetTitle className="flex items-center justify-between space-x-2">
-              <div>User Settings</div>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <SheetHeader className="border-b border-zinc-100 px-6 pb-4 pt-5 text-left dark:border-zinc-800/80">
+            <div className="mb-1 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <IconTerminal2 className="size-3.5 text-sky-500" />
+                <span>mdev.ai / settings</span>
+              </div>
 
               <Button
                 tabIndex={-1}
-                className="text-xs"
+                variant="outline"
                 size="sm"
                 onClick={handleSignOut}
+                className="h-7 gap-1.5 rounded-lg border-zinc-200 bg-transparent px-2.5 font-mono text-[11px] text-rose-600 hover:bg-rose-500/10 dark:border-zinc-800 dark:text-rose-400"
               >
-                <IconLogout className="mr-1" size={20} />
-                Logout
+                <IconLogout size={14} />
+                <span>Logout</span>
               </Button>
+            </div>
+            <SheetTitle className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              User Settings
             </SheetTitle>
           </SheetHeader>
 
-          <Tabs defaultValue="profile">
-            <TabsList className="mt-4 grid w-full grid-cols-2">
-              <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="keys">API Keys</TabsTrigger>
+          <GuestUpgrade />
+
+          <Tabs
+            defaultValue="profile"
+            className="flex min-h-0 flex-1 flex-col px-6 py-4"
+          >
+            <TabsList className="grid w-full grid-cols-2 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-900">
+              <TabsTrigger
+                value="profile"
+                className="rounded-lg font-mono text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-zinc-800"
+              >
+                Profile
+              </TabsTrigger>
+              <TabsTrigger
+                value="keys"
+                className="rounded-lg font-mono text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-zinc-800"
+              >
+                API Keys
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent className="mt-4 space-y-4" value="profile">
-              <div className="space-y-1">
-                <div className="flex items-center space-x-2">
-                  <Label>Username</Label>
-
-                  <div className="text-xs">
-                    {username !== profile.username ? (
-                      usernameAvailable ? (
-                        <div className="text-green-500">AVAILABLE</div>
-                      ) : (
-                        <div className="text-red-500">UNAVAILABLE</div>
-                      )
-                    ) : null}
+            <div className="flex-1 overflow-y-auto py-4">
+              <TabsContent className="mt-0 space-y-4" value="profile">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className={labelClass}>Username</Label>
+                    <span
+                      className={`font-mono text-[10px] font-semibold uppercase ${username === profile.username ? "text-zinc-400" : usernameAvailable ? "text-emerald-500" : "text-rose-500"}`}
+                    >
+                      {username === profile.username
+                        ? "Current"
+                        : usernameAvailable
+                          ? "Available"
+                          : "Unavailable"}
+                    </span>
                   </div>
-                </div>
 
-                <div className="relative">
-                  <Input
-                    className="pr-10"
-                    placeholder="Username..."
-                    value={username}
-                    onChange={e => {
-                      setUsername(e.target.value)
-                      checkUsernameAvailability(e.target.value)
-                    }}
-                    minLength={PROFILE_USERNAME_MIN}
-                    maxLength={PROFILE_USERNAME_MAX}
+                  <div className="relative">
+                    <Input
+                      className={inputClass}
+                      placeholder="Username..."
+                      value={username}
+                      onChange={e => {
+                        setUsername(e.target.value)
+                        checkUsernameAvailability(e.target.value)
+                      }}
+                      minLength={PROFILE_USERNAME_MIN}
+                      maxLength={PROFILE_USERNAME_MAX}
+                    />
+
+                    {username !== profile.username && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                        {loadingUsername ? (
+                          <IconLoader2 className="size-4 animate-spin text-zinc-400" />
+                        ) : usernameAvailable ? (
+                          <IconCircleCheckFilled className="size-4 text-emerald-500" />
+                        ) : (
+                          <IconCircleXFilled className="size-4 text-rose-500" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <LimitDisplay
+                    used={username.length}
+                    limit={PROFILE_USERNAME_MAX}
                   />
-
-                  {username !== profile.username ? (
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      {loadingUsername ? (
-                        <IconLoader2 className="animate-spin" />
-                      ) : usernameAvailable ? (
-                        <IconCircleCheckFilled className="text-green-500" />
-                      ) : (
-                        <IconCircleXFilled className="text-red-500" />
-                      )}
-                    </div>
-                  ) : null}
                 </div>
 
-                <LimitDisplay
-                  used={username.length}
-                  limit={PROFILE_USERNAME_MAX}
-                />
-              </div>
+                <div className="space-y-1.5">
+                  <Label className={labelClass}>Profile Image</Label>
+                  <ImagePicker
+                    src={profileImageSrc}
+                    image={profileImageFile}
+                    height={64}
+                    width={64}
+                    onSrcChange={setProfileImageSrc}
+                    onImageChange={setProfileImageFile}
+                  />
+                </div>
 
-              <div className="space-y-1">
-                <Label>Profile Image</Label>
+                <div className="space-y-1.5">
+                  <Label className={labelClass}>Chat Display Name</Label>
+                  <Input
+                    className={inputClass}
+                    placeholder="Your Name"
+                    value={displayName}
+                    onChange={e => setDisplayName(e.target.value)}
+                    maxLength={PROFILE_DISPLAY_NAME_MAX}
+                  />
+                </div>
 
-                <ImagePicker
-                  src={profileImageSrc}
-                  image={profileImageFile}
-                  height={50}
-                  width={50}
-                  onSrcChange={setProfileImageSrc}
-                  onImageChange={setProfileImageFile}
-                />
-              </div>
+                <div className="space-y-1.5">
+                  <Label className={labelClass}>
+                    AI Context & Instructions
+                  </Label>
+                  <TextareaAutosize
+                    value={profileInstructions}
+                    onValueChange={setProfileInstructions}
+                    placeholder="What would you like the AI to know about you?"
+                    minRows={4}
+                    maxRows={8}
+                    className="w-full rounded-lg border border-zinc-200 bg-zinc-50/50 p-3 text-xs placeholder:text-zinc-400 focus-visible:ring-1 focus-visible:ring-sky-500 dark:border-zinc-800 dark:bg-zinc-950/50"
+                  />
+                  <LimitDisplay
+                    used={profileInstructions.length}
+                    limit={PROFILE_CONTEXT_MAX}
+                  />
+                </div>
+              </TabsContent>
 
-              <div className="space-y-1">
-                <Label>Chat Display Name</Label>
-
-                <Input
-                  placeholder="Chat display name..."
-                  value={displayName}
-                  onChange={e => setDisplayName(e.target.value)}
-                  maxLength={PROFILE_DISPLAY_NAME_MAX}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-sm">
-                  What would you like the AI to know about you to provide better
-                  responses?
-                </Label>
-
-                <TextareaAutosize
-                  value={profileInstructions}
-                  onValueChange={setProfileInstructions}
-                  placeholder="Profile context... (optional)"
-                  minRows={6}
-                  maxRows={10}
-                />
-
-                <LimitDisplay
-                  used={profileInstructions.length}
-                  limit={PROFILE_CONTEXT_MAX}
-                />
-              </div>
-            </TabsContent>
-
-            <TabsContent className="mt-4 space-y-4" value="keys">
-              <div className="mt-5 space-y-2">
-                <Label className="flex items-center">
-                  {useAzureOpenai
-                    ? envKeyMap["azure"]
-                      ? ""
-                      : "Azure OpenAI API Key"
-                    : envKeyMap["openai"]
-                      ? ""
-                      : "OpenAI API Key"}
-
-                  <Button
-                    className={cn(
-                      "h-[18px] w-[150px] text-[11px]",
-                      (useAzureOpenai && !envKeyMap["azure"]) ||
-                        (!useAzureOpenai && !envKeyMap["openai"])
-                        ? "ml-3"
-                        : "mb-3"
-                    )}
-                    onClick={() => setUseAzureOpenai(!useAzureOpenai)}
-                  >
-                    {useAzureOpenai
-                      ? "Switch To Standard OpenAI"
-                      : "Switch To Azure OpenAI"}
-                  </Button>
-                </Label>
-
-                {useAzureOpenai ? (
-                  <>
-                    {envKeyMap["azure"] ? (
-                      <Label>Azure OpenAI API key set by admin.</Label>
-                    ) : (
-                      <Input
-                        placeholder="Azure OpenAI API Key"
-                        type="password"
-                        value={azureOpenaiAPIKey}
-                        onChange={e => setAzureOpenaiAPIKey(e.target.value)}
-                      />
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {envKeyMap["openai"] ? (
-                      <Label>OpenAI API key set by admin.</Label>
-                    ) : (
-                      <Input
-                        placeholder="OpenAI API Key"
-                        type="password"
-                        value={openaiAPIKey}
-                        onChange={e => setOpenaiAPIKey(e.target.value)}
-                      />
-                    )}
-                  </>
-                )}
-              </div>
-
-              <div className="ml-8 space-y-3">
-                {useAzureOpenai ? (
-                  <>
-                    {
-                      <div className="space-y-1">
-                        {envKeyMap["azure_openai_endpoint"] ? (
-                          <Label className="text-xs">
-                            Azure endpoint set by admin.
-                          </Label>
-                        ) : (
-                          <>
-                            <Label>Azure Endpoint</Label>
-
-                            <Input
-                              placeholder="https://your-endpoint.openai.azure.com"
-                              value={azureOpenaiEndpoint}
-                              onChange={e =>
-                                setAzureOpenaiEndpoint(e.target.value)
-                              }
-                            />
-                          </>
-                        )}
-                      </div>
+              <TabsContent className="mt-0 space-y-4" value="keys">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className={labelClass}>
+                      {useAzureOpenai ? "Azure OpenAI Key" : "OpenAI API Key"}
+                    </Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-6 rounded-md border-zinc-200 bg-zinc-100/70 px-2 font-mono text-[10px] dark:border-zinc-800 dark:bg-zinc-800"
+                      onClick={() => setUseAzureOpenai(!useAzureOpenai)}
+                    >
+                      {useAzureOpenai
+                        ? "Use Standard OpenAI"
+                        : "Use Azure OpenAI"}
+                    </Button>
+                  </div>
+                  <Input
+                    className={inputClass}
+                    placeholder="sk-..."
+                    type="password"
+                    value={useAzureOpenai ? azureOpenaiAPIKey : openaiAPIKey}
+                    onChange={e =>
+                      useAzureOpenai
+                        ? setAzureOpenaiAPIKey(e.target.value)
+                        : setOpenaiAPIKey(e.target.value)
                     }
+                  />
+                </div>
 
-                    {
-                      <div className="space-y-1">
-                        {envKeyMap["azure_gpt_35_turbo_name"] ? (
-                          <Label className="text-xs">
-                            Azure GPT-3.5 Turbo deployment name set by admin.
-                          </Label>
-                        ) : (
-                          <>
-                            <Label>Azure GPT-3.5 Turbo Deployment Name</Label>
+                <div className="space-y-1.5">
+                  <Label className={labelClass}>Anthropic API Key</Label>
+                  <Input
+                    className={inputClass}
+                    placeholder="sk-ant-..."
+                    type="password"
+                    value={anthropicAPIKey}
+                    onChange={e => setAnthropicAPIKey(e.target.value)}
+                  />
+                </div>
 
-                            <Input
-                              placeholder="Azure GPT-3.5 Turbo Deployment Name"
-                              value={azureOpenai35TurboID}
-                              onChange={e =>
-                                setAzureOpenai35TurboID(e.target.value)
-                              }
-                            />
-                          </>
-                        )}
-                      </div>
-                    }
+                <div className="space-y-1.5">
+                  <Label className={labelClass}>Google Gemini API Key</Label>
+                  <Input
+                    className={inputClass}
+                    placeholder="AIza..."
+                    type="password"
+                    value={googleGeminiAPIKey}
+                    onChange={e => setGoogleGeminiAPIKey(e.target.value)}
+                  />
+                </div>
 
-                    {
-                      <div className="space-y-1">
-                        {envKeyMap["azure_gpt_45_turbo_name"] ? (
-                          <Label className="text-xs">
-                            Azure GPT-4.5 Turbo deployment name set by admin.
-                          </Label>
-                        ) : (
-                          <>
-                            <Label>Azure GPT-4.5 Turbo Deployment Name</Label>
+                <div className="space-y-1.5">
+                  <Label className={labelClass}>OpenRouter API Key</Label>
+                  <Input
+                    className={inputClass}
+                    placeholder="sk-or-..."
+                    type="password"
+                    value={openrouterAPIKey}
+                    onChange={e => setOpenrouterAPIKey(e.target.value)}
+                  />
+                </div>
 
-                            <Input
-                              placeholder="Azure GPT-4.5 Turbo Deployment Name"
-                              value={azureOpenai45TurboID}
-                              onChange={e =>
-                                setAzureOpenai45TurboID(e.target.value)
-                              }
-                            />
-                          </>
-                        )}
-                      </div>
-                    }
-
-                    {
-                      <div className="space-y-1">
-                        {envKeyMap["azure_gpt_45_vision_name"] ? (
-                          <Label className="text-xs">
-                            Azure GPT-4.5 Vision deployment name set by admin.
-                          </Label>
-                        ) : (
-                          <>
-                            <Label>Azure GPT-4.5 Vision Deployment Name</Label>
-
-                            <Input
-                              placeholder="Azure GPT-4.5 Vision Deployment Name"
-                              value={azureOpenai45VisionID}
-                              onChange={e =>
-                                setAzureOpenai45VisionID(e.target.value)
-                              }
-                            />
-                          </>
-                        )}
-                      </div>
-                    }
-
-                    {
-                      <div className="space-y-1">
-                        {envKeyMap["azure_embeddings_name"] ? (
-                          <Label className="text-xs">
-                            Azure Embeddings deployment name set by admin.
-                          </Label>
-                        ) : (
-                          <>
-                            <Label>Azure Embeddings Deployment Name</Label>
-
-                            <Input
-                              placeholder="Azure Embeddings Deployment Name"
-                              value={azureEmbeddingsID}
-                              onChange={e =>
-                                setAzureEmbeddingsID(e.target.value)
-                              }
-                            />
-                          </>
-                        )}
-                      </div>
-                    }
-                  </>
-                ) : (
-                  <>
-                    <div className="space-y-1">
-                      {envKeyMap["openai_organization_id"] ? (
-                        <Label className="text-xs">
-                          OpenAI Organization ID set by admin.
-                        </Label>
-                      ) : (
-                        <>
-                          <Label>OpenAI Organization ID</Label>
-
-                          <Input
-                            placeholder="OpenAI Organization ID (optional)"
-                            disabled={
-                              !!process.env.NEXT_PUBLIC_OPENAI_ORGANIZATION_ID
-                            }
-                            type="password"
-                            value={openaiOrgID}
-                            onChange={e => setOpenaiOrgID(e.target.value)}
-                          />
-                        </>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                {envKeyMap["anthropic"] ? (
-                  <Label>Anthropic API key set by admin.</Label>
-                ) : (
-                  <>
-                    <Label>Anthropic API Key</Label>
-                    <Input
-                      placeholder="Anthropic API Key"
-                      type="password"
-                      value={anthropicAPIKey}
-                      onChange={e => setAnthropicAPIKey(e.target.value)}
-                    />
-                  </>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                {envKeyMap["google"] ? (
-                  <Label>Google Gemini API key set by admin.</Label>
-                ) : (
-                  <>
-                    <Label>Google Gemini API Key</Label>
-                    <Input
-                      placeholder="Google Gemini API Key"
-                      type="password"
-                      value={googleGeminiAPIKey}
-                      onChange={e => setGoogleGeminiAPIKey(e.target.value)}
-                    />
-                  </>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                {envKeyMap["mistral"] ? (
-                  <Label>Mistral API key set by admin.</Label>
-                ) : (
-                  <>
-                    <Label>Mistral API Key</Label>
-                    <Input
-                      placeholder="Mistral API Key"
-                      type="password"
-                      value={mistralAPIKey}
-                      onChange={e => setMistralAPIKey(e.target.value)}
-                    />
-                  </>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                {envKeyMap["groq"] ? (
-                  <Label>Groq API key set by admin.</Label>
-                ) : (
-                  <>
-                    <Label>Groq API Key</Label>
-                    <Input
-                      placeholder="Groq API Key"
-                      type="password"
-                      value={groqAPIKey}
-                      onChange={e => setGroqAPIKey(e.target.value)}
-                    />
-                  </>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                {envKeyMap["perplexity"] ? (
-                  <Label>Perplexity API key set by admin.</Label>
-                ) : (
-                  <>
-                    <Label>Perplexity API Key</Label>
-                    <Input
-                      placeholder="Perplexity API Key"
-                      type="password"
-                      value={perplexityAPIKey}
-                      onChange={e => setPerplexityAPIKey(e.target.value)}
-                    />
-                  </>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                {envKeyMap["openrouter"] ? (
-                  <Label>OpenRouter API key set by admin.</Label>
-                ) : (
-                  <>
-                    <Label>OpenRouter API Key</Label>
-                    <Input
-                      placeholder="OpenRouter API Key"
-                      type="password"
-                      value={openrouterAPIKey}
-                      onChange={e => setOpenrouterAPIKey(e.target.value)}
-                    />
-                  </>
-                )}
-              </div>
-            </TabsContent>
+                <div className="space-y-1.5">
+                  <Label className={labelClass}>Groq API Key</Label>
+                  <Input
+                    className={inputClass}
+                    placeholder="gsk_..."
+                    type="password"
+                    value={groqAPIKey}
+                    onChange={e => setGroqAPIKey(e.target.value)}
+                  />
+                </div>
+              </TabsContent>
+            </div>
           </Tabs>
         </div>
 
-        <div className="mt-6 flex items-center">
-          <div className="flex items-center space-x-1">
+        <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/50 px-6 py-4 dark:border-zinc-800/80 dark:bg-zinc-900/40">
+          <div className="flex items-center gap-2">
             <ThemeSwitcher />
-
             <WithTooltip
               display={
-                <div>
-                  Download Chatbot UI 1.0 data as JSON. Import coming soon!
-                </div>
+                <div className="font-mono text-xs">Export data as JSON</div>
               }
               trigger={
-                <IconFileDownload
-                  className="cursor-pointer hover:opacity-50"
-                  size={32}
+                <button
+                  type="button"
                   onClick={exportLocalStorageAsJSON}
-                />
+                  className="flex size-8 items-center justify-center rounded-lg border border-zinc-200 bg-white/80 text-zinc-500 shadow-sm hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                >
+                  <IconFileDownload size={16} />
+                </button>
               }
             />
           </div>
 
-          <div className="ml-auto space-x-2">
-            <Button variant="ghost" onClick={() => setIsOpen(false)}>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              className="h-9 rounded-lg border-zinc-200 bg-transparent px-4 font-mono text-xs text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800/60"
+            >
               Cancel
             </Button>
 
-            <Button ref={buttonRef} onClick={handleSave}>
-              Save
+            <Button
+              ref={buttonRef}
+              onClick={handleSave}
+              className="h-9 rounded-lg bg-zinc-900 px-4 text-xs font-semibold text-white shadow-sm hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+            >
+              Save Changes
             </Button>
           </div>
         </div>
