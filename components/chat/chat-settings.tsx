@@ -1,6 +1,7 @@
 import { ChatbotUIContext } from "@/context/context"
 import { CHAT_SETTING_LIMITS } from "@/lib/chat-setting-limits"
 import useHotkey from "@/lib/hooks/use-hotkey"
+import { LLM_LIST } from "@/lib/models/llm/llm-list"
 import { LLMID, ModelProvider } from "@/types"
 import { IconAdjustmentsHorizontal } from "@tabler/icons-react"
 import { FC, useContext, useEffect, useRef } from "react"
@@ -45,6 +46,26 @@ export const ChatSettings: FC<ChatSettingsProps> = ({}) => {
       )
     })
   }, [chatSettings?.model])
+
+  // If the selected hosted model isn't available (no user key and no demo key
+  // for its provider, e.g. a GPT default when only Gemini is configured),
+  // fall back to the first model that can actually be used.
+  useEffect(() => {
+    if (!chatSettings || availableHostedModels.length === 0) return
+
+    const isHostedModel = LLM_LIST.some(m => m.modelId === chatSettings.model)
+    if (!isHostedModel) return // custom / local / OpenRouter: leave alone
+
+    const isAvailable = availableHostedModels.some(
+      m => m.modelId === chatSettings.model
+    )
+    if (isAvailable) return
+
+    setChatSettings({
+      ...chatSettings,
+      model: availableHostedModels[0].modelId
+    })
+  }, [chatSettings?.model, availableHostedModels])
 
   if (!chatSettings) return null
 
