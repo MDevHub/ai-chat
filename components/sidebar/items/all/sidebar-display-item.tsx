@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { Tables } from "@/supabase/types"
 import { ContentType, DataItemType } from "@/types"
 import { useRouter } from "next/navigation"
-import { FC, useContext, useRef, useState } from "react"
+import { FC, useContext, useRef } from "react"
 import { SidebarUpdateItem } from "./sidebar-update-item"
 
 interface SidebarItemProps {
@@ -31,57 +31,12 @@ export const SidebarItem: FC<SidebarItemProps> = ({
 
   const itemRef = useRef<HTMLDivElement>(null)
 
-  const [isHovering, setIsHovering] = useState(false)
-
-  const actionMap = {
-    chats: async (item: any) => {},
-    presets: async (item: any) => {},
-    prompts: async (item: any) => {},
-    files: async (item: any) => {},
-    collections: async (item: any) => {},
-    assistants: async (assistant: Tables<"assistants">) => {
-      if (!selectedWorkspace) return
-
-      const createdChat = await createChat({
-        user_id: assistant.user_id,
-        workspace_id: selectedWorkspace.id,
-        assistant_id: assistant.id,
-        context_length: assistant.context_length,
-        include_profile_context: assistant.include_profile_context,
-        include_workspace_instructions:
-          assistant.include_workspace_instructions,
-        model: assistant.model,
-        name: `Chat with ${assistant.name}`,
-        prompt: assistant.prompt,
-        temperature: assistant.temperature,
-        embeddings_provider: assistant.embeddings_provider
-      })
-
-      setChats(prevState => [createdChat, ...prevState])
-      setSelectedAssistant(assistant)
-
-      return router.push(`/${selectedWorkspace.id}/chat/${createdChat.id}`)
-    },
-    tools: async (item: any) => {},
-    models: async (item: any) => {}
-  }
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
       e.stopPropagation()
       itemRef.current?.click()
     }
   }
-
-  // const handleClickAction = async (
-  //   e: React.MouseEvent<SVGSVGElement, MouseEvent>
-  // ) => {
-  //   e.stopPropagation()
-
-  //   const action = actionMap[contentType]
-
-  //   await action(item as any)
-  // }
 
   return (
     <SidebarUpdateItem
@@ -94,33 +49,16 @@ export const SidebarItem: FC<SidebarItemProps> = ({
       <div
         ref={itemRef}
         className={cn(
-          "hover:bg-accent flex w-full cursor-pointer items-center rounded p-2 hover:opacity-50 focus:outline-none"
+          "group flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:outline-none dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
         )}
         tabIndex={0}
         onKeyDown={handleKeyDown}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
       >
-        {icon}
+        <div className="shrink-0">{icon}</div>
 
-        <div className="ml-3 flex-1 truncate text-sm font-semibold">
+        <div className="ml-2.5 flex-1 truncate text-xs font-medium">
           {item.name}
         </div>
-
-        {/* TODO */}
-        {/* {isHovering && (
-          <WithTooltip
-            delayDuration={1000}
-            display={<div>Start chat with {contentType.slice(0, -1)}</div>}
-            trigger={
-              <IconSquarePlus
-                className="cursor-pointer hover:text-blue-500"
-                size={20}
-                onClick={handleClickAction}
-              />
-            }
-          />
-        )} */}
       </div>
     </SidebarUpdateItem>
   )

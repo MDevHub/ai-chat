@@ -26,46 +26,47 @@ export const QuickSettingOption: FC<QuickSettingOptionProps> = ({
   return (
     <DropdownMenuItem
       tabIndex={0}
-      className="cursor-pointer items-center"
+      className="flex cursor-pointer items-center justify-between rounded-xl px-2.5 py-2 text-xs transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/70"
       onSelect={onSelect}
     >
-      <div className="w-[32px]">
-        {contentType === "presets" ? (
-          <ModelIcon
-            provider={modelDetails?.provider || "custom"}
-            width={32}
-            height={32}
-          />
-        ) : image ? (
-          <Image
-            style={{ width: "32px", height: "32px" }}
-            className="rounded"
-            src={image}
-            alt="Assistant"
-            width={32}
-            height={32}
-          />
-        ) : (
-          <IconRobotFace
-            className="bg-primary text-secondary border-primary rounded border-DEFAULT p-1"
-            size={32}
-          />
-        )}
+      <div className="flex items-center gap-2.5 truncate">
+        <div className="shrink-0">
+          {contentType === "presets" ? (
+            <ModelIcon
+              provider={modelDetails?.provider || "custom"}
+              width={20}
+              height={20}
+            />
+          ) : image ? (
+            <Image
+              className="rounded-md object-cover"
+              src={image}
+              alt="Assistant"
+              width={20}
+              height={20}
+            />
+          ) : (
+            <div className="flex size-5 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-sky-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-sky-400">
+              <IconRobotFace size={12} />
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col truncate">
+          <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+            {item.name}
+          </span>
+          {item.description && (
+            <span className="truncate text-[11px] text-zinc-500 dark:text-zinc-400">
+              {item.description}
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="ml-4 flex grow flex-col space-y-1">
-        <div className="text-md font-bold">{item.name}</div>
-
-        {item.description && (
-          <div className="text-sm font-light">{item.description}</div>
-        )}
-      </div>
-
-      <div className="min-w-[40px]">
-        {isSelected ? (
-          <IconCircleCheckFilled className="ml-4" size={20} />
-        ) : null}
-      </div>
+      {isSelected && (
+        <IconCircleCheckFilled size={16} className="shrink-0 text-sky-500" />
+      )}
     </DropdownMenuItem>
   )
 }

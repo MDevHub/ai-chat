@@ -12,6 +12,8 @@ interface WithTooltipProps {
 
   delayDuration?: number
   side?: "left" | "right" | "top" | "bottom"
+  // Render the trigger element itself instead of wrapping it in a <button>
+  asChild?: boolean
 }
 
 export const WithTooltip: FC<WithTooltipProps> = ({
@@ -19,12 +21,13 @@ export const WithTooltip: FC<WithTooltipProps> = ({
   trigger,
 
   delayDuration = 500,
-  side = "right"
+  side = "right",
+  asChild = false
 }) => {
   return (
     <TooltipProvider delayDuration={delayDuration}>
       <Tooltip>
-        <TooltipTrigger>{trigger}</TooltipTrigger>
+        <TooltipTrigger asChild={asChild}>{trigger}</TooltipTrigger>
 
         <TooltipContent side={side}>{display}</TooltipContent>
       </Tooltip>

@@ -26,6 +26,7 @@ import { createTool } from "@/db/tools"
 import { convertBlobToBase64 } from "@/lib/blob-to-b64"
 import { Tables, TablesInsert } from "@/supabase/types"
 import { ContentType } from "@/types"
+import { IconTerminal2 } from "@tabler/icons-react"
 import { FC, useContext, useRef, useState } from "react"
 import { toast } from "sonner"
 
@@ -187,7 +188,7 @@ export const SidebarCreateItem: FC<SidebarCreateItemProps> = ({
   const handleCreate = async () => {
     try {
       if (!selectedWorkspace) return
-      if (isTyping) return // Prevent creation while typing
+      if (isTyping) return
 
       const createFunction = createFunctions[contentType]
       const setStateFunction = stateUpdateFunctions[contentType]
@@ -215,36 +216,50 @@ export const SidebarCreateItem: FC<SidebarCreateItemProps> = ({
     }
   }
 
+  const itemLabel =
+    contentType.charAt(0).toUpperCase() + contentType.slice(1, -1)
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent
-        className="flex min-w-[450px] flex-col justify-between overflow-auto"
+        className="flex w-full flex-col justify-between border-r border-zinc-200/80 bg-white/95 p-0 backdrop-blur-xl sm:max-w-[460px] dark:border-zinc-800/80 dark:bg-zinc-950/95"
         side="left"
         onKeyDown={handleKeyDown}
       >
-        <div className="grow overflow-auto">
-          <SheetHeader>
-            <SheetTitle className="text-2xl font-bold">
-              Create{" "}
-              {contentType.charAt(0).toUpperCase() + contentType.slice(1, -1)}
+        <div className="flex min-h-0 flex-1 flex-col">
+          <SheetHeader className="border-b border-zinc-100 px-6 pb-4 pt-5 text-left dark:border-zinc-800/80">
+            <div className="mb-1 flex items-center gap-1.5 font-mono text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+              <IconTerminal2 className="size-3.5 text-sky-500" />
+              <span>mdev.ai / {contentType}</span>
+            </div>
+            <SheetTitle className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              Create {itemLabel}
             </SheetTitle>
           </SheetHeader>
 
-          <div className="mt-4 space-y-3">{renderInputs()}</div>
+          <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
+            {renderInputs()}
+          </div>
         </div>
 
-        <SheetFooter className="mt-2 flex justify-between">
-          <div className="flex grow justify-end space-x-2">
+        <SheetFooter className="border-t border-zinc-100 bg-zinc-50/50 px-6 py-4 dark:border-zinc-800/80 dark:bg-zinc-900/40">
+          <div className="flex w-full justify-end gap-2">
             <Button
               disabled={creating}
               variant="outline"
               onClick={() => onOpenChange(false)}
+              className="h-9 rounded-lg border-zinc-200 bg-transparent px-4 font-mono text-xs text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800/60"
             >
               Cancel
             </Button>
 
-            <Button disabled={creating} ref={buttonRef} onClick={handleCreate}>
-              {creating ? "Creating..." : "Create"}
+            <Button
+              disabled={creating}
+              ref={buttonRef}
+              onClick={handleCreate}
+              className="h-9 rounded-lg bg-zinc-900 px-4 text-xs font-semibold text-white shadow-sm hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+            >
+              {creating ? "Creating..." : `Create ${itemLabel}`}
             </Button>
           </div>
         </SheetFooter>

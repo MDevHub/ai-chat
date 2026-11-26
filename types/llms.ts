@@ -11,6 +11,7 @@ export type LLMID =
 // OpenAI Models (UPDATED 5/13/24)
 export type OpenAILLMID =
   | "gpt-4o" // GPT-4o
+  | "gpt-4o-mini" // GPT-4o mini
   | "gpt-4-turbo-preview" // GPT-4 Turbo
   | "gpt-4-vision-preview" // GPT-4 Vision
   | "gpt-4" // GPT-4
@@ -21,7 +22,10 @@ export type GoogleLLMID =
   | "gemini-pro" // Gemini Pro
   | "gemini-pro-vision" // Gemini Pro Vision
   | "gemini-1.5-pro-latest" // Gemini 1.5 Pro
+  | "gemini-1.5-pro-001" // Gemini 1.5 Pro 001
   | "gemini-1.5-flash" // Gemini 1.5 Flash
+  | "gemini-1.5-flash-001" // Gemini 1.5 Flash 001
+  | "gemini-3.5-flash-lite" // Gemini 3.5 Flash-Lite
 
 // Anthropic Models
 export type AnthropicLLMID =

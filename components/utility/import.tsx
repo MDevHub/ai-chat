@@ -6,7 +6,7 @@ import { createFiles } from "@/db/files"
 import { createPresets } from "@/db/presets"
 import { createPrompts } from "@/db/prompts"
 import { createTools } from "@/db/tools"
-import { IconUpload, IconX } from "@tabler/icons-react"
+import { IconTerminal2, IconUpload, IconX } from "@tabler/icons-react"
 import { FC, useContext, useRef, useState } from "react"
 import { toast } from "sonner"
 import { SIDEBAR_ICON_SIZE } from "../sidebar/sidebar-switcher"
@@ -17,7 +17,8 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader
+  DialogHeader,
+  DialogTitle
 } from "../ui/dialog"
 import { Input } from "../ui/input"
 
@@ -121,7 +122,6 @@ export const Import: FC<ImportProps> = ({}) => {
 
   const handleRemoveItem = (item: any) => {
     setImportList(prev => prev.filter(prevItem => prevItem !== item))
-
     setImportCounts(prev => {
       const newCounts: any = { ...prev }
       newCounts[item.contentType] -= 1
@@ -189,18 +189,7 @@ export const Import: FC<ImportProps> = ({}) => {
     })
 
     toast.success("Data imported successfully!")
-
-    setImportList([])
-    setImportCounts({
-      chats: 0,
-      presets: 0,
-      prompts: 0,
-      files: 0,
-      collections: 0,
-      assistants: 0,
-      tools: 0
-    })
-    setIsOpen(false)
+    handleCancel()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -212,67 +201,85 @@ export const Import: FC<ImportProps> = ({}) => {
 
   return (
     <>
-      <IconUpload
-        className="cursor-pointer hover:opacity-50"
-        size={SIDEBAR_ICON_SIZE}
+      <button
+        type="button"
         onClick={() => setIsOpen(true)}
-      />
+        className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+        aria-label="Import Data"
+      >
+        <IconUpload size={SIDEBAR_ICON_SIZE} />
+      </button>
 
       {isOpen && (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogContent
-            className="max-w-[600px] space-y-4"
+            className="w-full max-w-md rounded-2xl border border-zinc-200/90 bg-white/95 p-6 shadow-xl backdrop-blur-xl dark:border-zinc-800/90 dark:bg-zinc-900/95"
             onKeyDown={handleKeyDown}
           >
-            <DialogHeader>
-              <div className="text-2xl font-bold">Import Data</div>
-
-              <DialogDescription>
-                Import data from a JSON file(s).
+            <DialogHeader className="space-y-1.5 text-left">
+              <div className="mb-1 flex items-center gap-2 font-mono text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                <IconTerminal2 className="size-4 text-sky-500" />
+                <span>mdev.ai</span>
+              </div>
+              <DialogTitle className="text-base font-semibold tracking-tight">
+                Import Data
+              </DialogTitle>
+              <DialogDescription className="text-xs text-zinc-500 dark:text-zinc-400">
+                Import workspace data from JSON files.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="max-w-[560px] space-y-4">
-              <div className="space-y-1">
+            <div className="space-y-4 py-3">
+              <div className="max-h-40 space-y-1 overflow-y-auto">
                 {importList.map((item, index) => (
-                  <div key={index} className="flex space-x-2">
-                    <Button className="shrink-0" variant="ghost" size="icon">
-                      <IconX
-                        className="cursor-pointer hover:opacity-50"
-                        onClick={() => handleRemoveItem(item)}
-                      />
-                    </Button>
-
+                  <div
+                    key={index}
+                    className="flex items-center justify-between rounded-lg bg-zinc-50 p-2 dark:bg-zinc-950"
+                  >
                     <div className="flex items-center space-x-2 truncate">
-                      <Badge>
+                      <Badge className="font-mono text-[10px]">
                         {item.contentType.slice(0, -1).toUpperCase()}
                       </Badge>
-
-                      <div className="truncate">{item.name}</div>
+                      <div className="truncate text-xs">{item.name}</div>
                     </div>
+                    <Button
+                      className="size-6 p-0 text-zinc-400 hover:text-rose-600"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveItem(item)}
+                    >
+                      <IconX size={14} />
+                    </Button>
                   </div>
                 ))}
               </div>
 
-              {Object.entries(importCounts).map(([key, value]) => {
-                if (value > 0) {
-                  return <div key={key}>{`${key}: ${value}`}</div>
-                }
-                return null
-              })}
+              <div className="font-mono text-xs text-zinc-500">
+                {Object.entries(importCounts).map(([key, value]) =>
+                  value > 0 ? (
+                    <div key={key}>
+                      {key}: {value}
+                    </div>
+                  ) : null
+                )}
+              </div>
 
               <Input
-                className="mt-4"
                 ref={inputRef}
                 type="file"
                 onChange={handleSelectFiles}
                 accept=".json"
                 multiple
+                className="h-9 rounded-lg border-zinc-200 bg-zinc-50/50 text-xs dark:border-zinc-800 dark:bg-zinc-950/50"
               />
             </div>
 
-            <DialogFooter>
-              <Button variant="ghost" onClick={handleCancel}>
+            <DialogFooter className="flex gap-2 sm:justify-end">
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                className="h-9 rounded-lg border-zinc-200 bg-transparent px-4 font-mono text-xs dark:border-zinc-800"
+              >
                 Cancel
               </Button>
 
@@ -280,6 +287,7 @@ export const Import: FC<ImportProps> = ({}) => {
                 ref={buttonRef}
                 onClick={handleSaveData}
                 disabled={importList.length === 0}
+                className="h-9 rounded-lg bg-zinc-900 px-4 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
               >
                 Save Data
               </Button>

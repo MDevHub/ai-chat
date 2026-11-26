@@ -101,13 +101,12 @@ export const ChatFilesDisplay: FC<ChatFilesDisplayProps> = ({}) => {
       <div className="space-y-2">
         <div className="flex w-full items-center justify-center">
           <Button
-            className="flex h-[32px] w-[140px] space-x-2"
+            variant="outline"
+            className="h-8 gap-2 rounded-lg border-zinc-200 bg-white/80 px-3 font-mono text-xs text-zinc-700 shadow-sm backdrop-blur-md hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
             onClick={() => setShowFilesDisplay(false)}
           >
             <RetrievalToggle />
-
-            <div>Hide files</div>
-
+            <span>Hide files</span>
             <div onClick={e => e.stopPropagation()}>
               <ChatRetrievalSettings />
             </div>
@@ -115,33 +114,33 @@ export const ChatFilesDisplay: FC<ChatFilesDisplayProps> = ({}) => {
         </div>
 
         <div className="overflow-auto">
-          <div className="flex gap-2 overflow-auto pt-2">
+          <div className="flex gap-2 overflow-auto pt-1">
             {messageImages.map((image, index) => (
               <div
                 key={index}
-                className="relative flex h-[64px] cursor-pointer items-center space-x-4 rounded-xl hover:opacity-50"
+                className="relative flex h-14 cursor-pointer items-center space-x-4 rounded-xl border border-zinc-200 bg-white/70 p-1 backdrop-blur-md transition-opacity hover:opacity-75 dark:border-zinc-800 dark:bg-zinc-900/70"
               >
                 <Image
-                  className="rounded"
-                  // Force the image to be 56px by 56px
+                  className="rounded-lg object-cover"
                   style={{
-                    minWidth: "56px",
-                    minHeight: "56px",
-                    maxHeight: "56px",
-                    maxWidth: "56px"
+                    minWidth: "48px",
+                    minHeight: "48px",
+                    maxHeight: "48px",
+                    maxWidth: "48px"
                   }}
-                  src={image.base64} // Preview images will always be base64
+                  src={image.base64}
                   alt="File image"
-                  width={56}
-                  height={56}
+                  width={48}
+                  height={48}
                   onClick={() => {
                     setSelectedImage(image)
                     setShowPreview(true)
                   }}
                 />
 
-                <IconX
-                  className="bg-muted-foreground border-primary absolute right-[-6px] top-[-2px] flex size-5 cursor-pointer items-center justify-center rounded-full border-DEFAULT text-[10px] hover:border-red-500 hover:bg-white hover:text-red-500"
+                <button
+                  type="button"
+                  className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-sm hover:text-rose-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:text-rose-400"
                   onClick={e => {
                     e.stopPropagation()
                     setNewMessageImages(
@@ -153,7 +152,9 @@ export const ChatFilesDisplay: FC<ChatFilesDisplayProps> = ({}) => {
                       chatImages.filter(f => f.messageId !== image.messageId)
                     )
                   }}
-                />
+                >
+                  <IconX size={12} />
+                </button>
               </div>
             ))}
 
@@ -161,24 +162,27 @@ export const ChatFilesDisplay: FC<ChatFilesDisplayProps> = ({}) => {
               file.id === "loading" ? (
                 <div
                   key={index}
-                  className="relative flex h-[64px] items-center space-x-4 rounded-xl border-2 px-4 py-3"
+                  className="relative flex h-14 items-center space-x-3 rounded-xl border border-zinc-200 bg-white/70 px-3.5 py-2.5 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/70"
                 >
-                  <div className="rounded bg-blue-500 p-2">
-                    <IconLoader2 className="animate-spin" />
+                  <div className="rounded-lg bg-sky-500/10 p-2 text-sky-500">
+                    <IconLoader2 className="size-4 animate-spin" />
                   </div>
-
-                  <div className="truncate text-sm">
-                    <div className="truncate">{file.name}</div>
-                    <div className="truncate opacity-50">{file.type}</div>
+                  <div className="truncate text-xs font-medium">
+                    <div className="truncate text-zinc-900 dark:text-zinc-100">
+                      {file.name}
+                    </div>
+                    <div className="truncate font-mono text-[10px] text-zinc-400">
+                      {file.type}
+                    </div>
                   </div>
                 </div>
               ) : (
                 <div
                   key={file.id}
-                  className="relative flex h-[64px] cursor-pointer items-center space-x-4 rounded-xl border-2 px-4 py-3 hover:opacity-50"
+                  className="relative flex h-14 cursor-pointer items-center space-x-3 rounded-xl border border-zinc-200 bg-white/70 px-3.5 py-2.5 backdrop-blur-md transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/70 dark:hover:border-zinc-700"
                   onClick={() => getLinkAndView(file)}
                 >
-                  <div className="rounded bg-blue-500 p-2">
+                  <div className="rounded-lg bg-sky-500/10 p-2 text-sky-500">
                     {(() => {
                       let fileExtension = file.type.includes("/")
                         ? file.type.split("/")[1]
@@ -186,29 +190,30 @@ export const ChatFilesDisplay: FC<ChatFilesDisplayProps> = ({}) => {
 
                       switch (fileExtension) {
                         case "pdf":
-                          return <IconFileTypePdf />
+                          return <IconFileTypePdf size={16} />
                         case "markdown":
-                          return <IconMarkdown />
+                          return <IconMarkdown size={16} />
                         case "txt":
-                          return <IconFileTypeTxt />
+                          return <IconFileTypeTxt size={16} />
                         case "json":
-                          return <IconJson />
+                          return <IconJson size={16} />
                         case "csv":
-                          return <IconFileTypeCsv />
+                          return <IconFileTypeCsv size={16} />
                         case "docx":
-                          return <IconFileTypeDocx />
+                          return <IconFileTypeDocx size={16} />
                         default:
-                          return <IconFileFilled />
+                          return <IconFileFilled size={16} />
                       }
                     })()}
                   </div>
 
-                  <div className="truncate text-sm">
+                  <div className="truncate text-xs font-medium text-zinc-900 dark:text-zinc-100">
                     <div className="truncate">{file.name}</div>
                   </div>
 
-                  <IconX
-                    className="bg-muted-foreground border-primary absolute right-[-6px] top-[-6px] flex size-5 cursor-pointer items-center justify-center rounded-full border-DEFAULT text-[10px] hover:border-red-500 hover:bg-white hover:text-red-500"
+                  <button
+                    type="button"
+                    className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-sm hover:text-rose-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:text-rose-400"
                     onClick={e => {
                       e.stopPropagation()
                       setNewMessageFiles(
@@ -216,7 +221,9 @@ export const ChatFilesDisplay: FC<ChatFilesDisplayProps> = ({}) => {
                       )
                       setChatFiles(chatFiles.filter(f => f.id !== file.id))
                     }}
-                  />
+                  >
+                    <IconX size={12} />
+                  </button>
                 </div>
               )
             )}
@@ -228,17 +235,15 @@ export const ChatFilesDisplay: FC<ChatFilesDisplayProps> = ({}) => {
     combinedMessageFiles.length > 0 && (
       <div className="flex w-full items-center justify-center space-x-2">
         <Button
-          className="flex h-[32px] w-[140px] space-x-2"
+          variant="outline"
+          className="h-8 gap-2 rounded-lg border-zinc-200 bg-white/80 px-3 font-mono text-xs text-zinc-700 shadow-sm backdrop-blur-md hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
           onClick={() => setShowFilesDisplay(true)}
         >
           <RetrievalToggle />
-
-          <div>
-            {" "}
+          <span>
             View {combinedMessageFiles.length} file
             {combinedMessageFiles.length > 1 ? "s" : ""}
-          </div>
-
+          </span>
           <div onClick={e => e.stopPropagation()}>
             <ChatRetrievalSettings />
           </div>
@@ -257,20 +262,21 @@ const RetrievalToggle = ({}) => {
         delayDuration={0}
         side="top"
         display={
-          <div>
+          <div className="font-mono text-xs">
             {useRetrieval
-              ? "File retrieval is enabled on the selected files for this message. Click the indicator to disable."
-              : "Click the indicator to enable file retrieval for this message."}
+              ? "File retrieval active. Click to disable."
+              : "Click to enable file retrieval."}
           </div>
         }
         trigger={
           <IconCircleFilled
             className={cn(
-              "p-1",
-              useRetrieval ? "text-green-500" : "text-red-500",
-              useRetrieval ? "hover:text-green-200" : "hover:text-red-200"
+              "cursor-pointer transition-colors",
+              useRetrieval
+                ? "text-emerald-500 hover:text-emerald-400"
+                : "text-rose-500 hover:text-rose-400"
             )}
-            size={24}
+            size={12}
             onClick={e => {
               e.stopPropagation()
               setUseRetrieval(prev => !prev)
