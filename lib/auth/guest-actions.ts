@@ -1,5 +1,6 @@
 "use server"
 
+import { getDemoModels } from "@/lib/server/demo"
 import { createClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
@@ -45,6 +46,16 @@ export async function signInAsGuest() {
 
   if (!homeWorkspace) {
     return fail("Couldn't prepare your guest workspace. Please try again.")
+  }
+
+  // The workspace trigger defaults to an OpenAI model; point guests at a model
+  // the demo can actually serve (e.g. Gemini when only a Gemini key is set).
+  const demoModel = Object.values(getDemoModels())[0]
+  if (demoModel) {
+    await supabase
+      .from("workspaces")
+      .update({ default_model: demoModel })
+      .eq("id", homeWorkspace.id)
   }
 
   return redirect(`/${homeWorkspace.id}/chat`)
