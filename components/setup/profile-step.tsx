@@ -88,24 +88,28 @@ export const ProfileStep: FC<ProfileStepProps> = ({
   )
 
   return (
-    <>
-      <div className="space-y-1">
-        <div className="flex items-center space-x-2">
-          <Label>Username</Label>
+    <div className="space-y-4">
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <Label className="font-mono text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            Username
+          </Label>
 
-          <div className="text-xs">
-            {usernameAvailable ? (
-              <div className="text-green-500">AVAILABLE</div>
-            ) : (
-              <div className="text-red-500">UNAVAILABLE</div>
-            )}
-          </div>
+          <span
+            className={`font-mono text-[10px] font-semibold uppercase tracking-wider ${
+              usernameAvailable
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-rose-600 dark:text-rose-400"
+            }`}
+          >
+            {usernameAvailable ? "Available" : "Unavailable"}
+          </span>
         </div>
 
         <div className="relative">
           <Input
-            className="pr-10"
-            placeholder="username"
+            className="h-10 rounded-lg border-zinc-200 bg-zinc-50/50 pl-3.5 pr-10 text-sm placeholder:text-zinc-400 focus-visible:ring-1 focus-visible:ring-sky-500 dark:border-zinc-800 dark:bg-zinc-950/50 dark:placeholder:text-zinc-600"
+            placeholder="mdevhub"
             value={username}
             onChange={e => {
               onUsernameChange(e.target.value)
@@ -117,11 +121,11 @@ export const ProfileStep: FC<ProfileStepProps> = ({
 
           <div className="absolute inset-y-0 right-0 flex items-center pr-3">
             {loading ? (
-              <IconLoader2 className="animate-spin" />
+              <IconLoader2 className="size-4 animate-spin text-zinc-400" />
             ) : usernameAvailable ? (
-              <IconCircleCheckFilled className="text-green-500" />
+              <IconCircleCheckFilled className="size-4 text-emerald-500" />
             ) : (
-              <IconCircleXFilled className="text-red-500" />
+              <IconCircleXFilled className="size-4 text-rose-500" />
             )}
           </div>
         </div>
@@ -129,10 +133,13 @@ export const ProfileStep: FC<ProfileStepProps> = ({
         <LimitDisplay used={username.length} limit={PROFILE_USERNAME_MAX} />
       </div>
 
-      <div className="space-y-1">
-        <Label>Chat Display Name</Label>
+      <div className="space-y-1.5">
+        <Label className="font-mono text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          Chat Display Name
+        </Label>
 
         <Input
+          className="h-10 rounded-lg border-zinc-200 bg-zinc-50/50 px-3.5 text-sm placeholder:text-zinc-400 focus-visible:ring-1 focus-visible:ring-sky-500 dark:border-zinc-800 dark:bg-zinc-950/50 dark:placeholder:text-zinc-600"
           placeholder="Your Name"
           value={displayName}
           onChange={e => onDisplayNameChange(e.target.value)}
@@ -144,6 +151,6 @@ export const ProfileStep: FC<ProfileStepProps> = ({
           limit={PROFILE_DISPLAY_NAME_MAX}
         />
       </div>
-    </>
+    </div>
   )
 }

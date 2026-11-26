@@ -56,7 +56,6 @@ export const AssistantPicker: FC<AssistantPickerProps> = ({}) => {
         e.preventDefault()
         itemsRef.current[0]?.focus()
       } else if (e.key === "ArrowUp" && !e.shiftKey && index === 0) {
-        // go to last element if arrow up is pressed on first element
         e.preventDefault()
         itemsRef.current[itemsRef.current.length - 1]?.focus()
       } else if (e.key === "ArrowUp") {
@@ -74,9 +73,9 @@ export const AssistantPicker: FC<AssistantPickerProps> = ({}) => {
   return (
     <>
       {isAssistantPickerOpen && (
-        <div className="bg-background flex flex-col space-y-1 rounded-xl border-2 p-2 text-sm">
+        <div className="flex flex-col space-y-1 rounded-2xl border border-zinc-200/90 bg-white/95 p-2 shadow-xl backdrop-blur-xl dark:border-zinc-800/90 dark:bg-zinc-900/95">
           {filteredAssistants.length === 0 ? (
-            <div className="text-md flex h-14 cursor-pointer items-center justify-center italic hover:opacity-50">
+            <div className="flex h-12 cursor-pointer items-center justify-center font-mono text-xs italic text-zinc-400">
               No matching assistants.
             </div>
           ) : (
@@ -88,7 +87,7 @@ export const AssistantPicker: FC<AssistantPickerProps> = ({}) => {
                     itemsRef.current[index] = ref
                   }}
                   tabIndex={0}
-                  className="hover:bg-accent focus:bg-accent flex cursor-pointer items-center rounded p-2 focus:outline-none"
+                  className="flex cursor-pointer items-center rounded-xl p-2.5 transition-colors hover:bg-zinc-100 focus:bg-zinc-100 focus:outline-none dark:hover:bg-zinc-800/80 dark:focus:bg-zinc-800/80"
                   onClick={() =>
                     callSelectAssistant(item as Tables<"assistants">)
                   }
@@ -102,18 +101,21 @@ export const AssistantPicker: FC<AssistantPickerProps> = ({}) => {
                         )?.url || ""
                       }
                       alt={item.name}
-                      width={32}
-                      height={32}
-                      className="rounded"
+                      width={28}
+                      height={28}
+                      className="rounded-md object-cover"
                     />
                   ) : (
-                    <IconRobotFace size={32} />
+                    <div className="flex size-7 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-sky-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-sky-400">
+                      <IconRobotFace size={16} />
+                    </div>
                   )}
 
                   <div className="ml-3 flex flex-col">
-                    <div className="font-bold">{item.name}</div>
-
-                    <div className="truncate text-sm opacity-80">
+                    <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                      {item.name}
+                    </div>
+                    <div className="truncate text-[11px] text-zinc-500 dark:text-zinc-400">
                       {item.description || "No description."}
                     </div>
                   </div>

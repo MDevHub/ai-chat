@@ -15,6 +15,12 @@ interface CreateAssistantProps {
   onOpenChange: (isOpen: boolean) => void
 }
 
+const inputClass =
+  "h-9 rounded-lg border-zinc-200 bg-zinc-50/50 px-3 text-xs placeholder:text-zinc-400 focus-visible:ring-1 focus-visible:ring-sky-500 dark:border-zinc-800 dark:bg-zinc-950/50"
+
+const labelClass =
+  "font-mono text-xs font-medium text-zinc-600 dark:text-zinc-400"
+
 export const CreateAssistant: FC<CreateAssistantProps> = ({
   isOpen,
   onOpenChange
@@ -94,11 +100,7 @@ export const CreateAssistant: FC<CreateAssistantProps> = ({
       "gpt-3.5-turbo-1106",
       "gpt-4"
     ]
-    const isModelCompatible = compatibleModels.includes(
-      assistantChatSettings.model
-    )
-
-    return isModelCompatible
+    return compatibleModels.includes(assistantChatSettings.model)
   }
 
   if (!profile) return null
@@ -135,10 +137,10 @@ export const CreateAssistant: FC<CreateAssistantProps> = ({
       isTyping={isTyping}
       renderInputs={() => (
         <>
-          <div className="space-y-1">
-            <Label>Name</Label>
-
+          <div className="space-y-1.5">
+            <Label className={labelClass}>Name</Label>
             <Input
+              className={inputClass}
               placeholder="Assistant name..."
               value={name}
               onChange={e => setName(e.target.value)}
@@ -146,10 +148,10 @@ export const CreateAssistant: FC<CreateAssistantProps> = ({
             />
           </div>
 
-          <div className="space-y-1 pt-2">
-            <Label>Description</Label>
-
+          <div className="space-y-1.5">
+            <Label className={labelClass}>Description</Label>
             <Input
+              className={inputClass}
               placeholder="Assistant description..."
               value={description}
               onChange={e => setDescription(e.target.value)}
@@ -157,11 +159,10 @@ export const CreateAssistant: FC<CreateAssistantProps> = ({
             />
           </div>
 
-          <div className="space-y-1 pt-2">
-            <Label className="flex space-x-1">
-              <div>Image</div>
-
-              <div className="text-xs">(optional)</div>
+          <div className="space-y-1.5">
+            <Label className={`${labelClass} flex items-center gap-1.5`}>
+              <span>Avatar</span>
+              <span className="text-[10px] text-zinc-400">(optional)</span>
             </Label>
 
             <ImagePicker
@@ -169,8 +170,8 @@ export const CreateAssistant: FC<CreateAssistantProps> = ({
               image={selectedImage}
               onSrcChange={setImageLink}
               onImageChange={setSelectedImage}
-              width={100}
-              height={100}
+              width={88}
+              height={88}
             />
           </div>
 
@@ -180,9 +181,8 @@ export const CreateAssistant: FC<CreateAssistantProps> = ({
             useAdvancedDropdown={true}
           />
 
-          <div className="space-y-1 pt-2">
-            <Label>Files & Collections</Label>
-
+          <div className="space-y-1.5">
+            <Label className={labelClass}>Files & Collections</Label>
             <AssistantRetrievalSelect
               selectedAssistantRetrievalItems={selectedAssistantRetrievalItems}
               onAssistantRetrievalItemsSelect={handleRetrievalItemSelect}
@@ -190,17 +190,16 @@ export const CreateAssistant: FC<CreateAssistantProps> = ({
           </div>
 
           {checkIfModelIsToolCompatible() ? (
-            <div className="space-y-1">
-              <Label>Tools</Label>
-
+            <div className="space-y-1.5">
+              <Label className={labelClass}>Tools</Label>
               <AssistantToolSelect
                 selectedAssistantTools={selectedAssistantToolItems}
                 onAssistantToolsSelect={handleToolSelect}
               />
             </div>
           ) : (
-            <div className="pt-1 font-semibold">
-              Model is not compatible with tools.
+            <div className="rounded-lg border border-zinc-200/80 bg-zinc-50/60 px-3 py-2 font-mono text-[11px] text-zinc-500 dark:border-zinc-800/80 dark:bg-zinc-900/40 dark:text-zinc-400">
+              Selected model does not support function tools.
             </div>
           )}
         </>

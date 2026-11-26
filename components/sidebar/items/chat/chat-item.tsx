@@ -1,4 +1,5 @@
 import { ModelIcon } from "@/components/models/model-icon"
+import { useDashboard } from "@/components/ui/dashboard-context"
 import { WithTooltip } from "@/components/ui/with-tooltip"
 import { ChatbotUIContext } from "@/context/context"
 import { LLM_LIST } from "@/lib/models/llm/llm-list"
@@ -25,6 +26,7 @@ export const ChatItem: FC<ChatItemProps> = ({ chat }) => {
     availableOpenRouterModels
   } = useContext(ChatbotUIContext)
 
+  const { closeSidebarOnMobile } = useDashboard()
   const router = useRouter()
   const params = useParams()
   const isActive = params.chatid === chat.id || selectedChat?.id === chat.id
@@ -33,6 +35,7 @@ export const ChatItem: FC<ChatItemProps> = ({ chat }) => {
 
   const handleClick = () => {
     if (!selectedWorkspace) return
+    closeSidebarOnMobile()
     return router.push(`/${selectedWorkspace.id}/chat/${chat.id}`)
   }
 

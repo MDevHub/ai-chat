@@ -5,6 +5,7 @@ import { ContentType } from "@/types"
 import { IconFolderPlus, IconPlus } from "@tabler/icons-react"
 import { FC, useContext, useState } from "react"
 import { Button } from "../ui/button"
+import { useDashboard } from "../ui/dashboard-context"
 import { CreateAssistant } from "./items/assistants/create-assistant"
 import { CreateCollection } from "./items/collections/create-collection"
 import { CreateFile } from "./items/files/create-file"
@@ -25,6 +26,7 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
   const { profile, selectedWorkspace, folders, setFolders } =
     useContext(ChatbotUIContext)
   const { handleNewChat } = useChatHandler()
+  const { closeSidebarOnMobile } = useDashboard()
 
   const [isCreatingPrompt, setIsCreatingPrompt] = useState(false)
   const [isCreatingPreset, setIsCreatingPreset] = useState(false)
@@ -52,6 +54,7 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
     switch (contentType) {
       case "chats":
         return async () => {
+          closeSidebarOnMobile()
           handleNewChat()
         }
 
@@ -96,17 +99,27 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
   }
 
   return (
-    <div className="flex w-full space-x-2">
-      <Button className="flex h-[36px] grow" onClick={getCreateFunction()}>
-        <IconPlus className="mr-1" size={20} />
-        New{" "}
-        {contentType.charAt(0).toUpperCase() +
-          contentType.slice(1, contentType.length - 1)}
+    <div className="flex w-full items-center gap-1.5">
+      <Button
+        className="flex h-9 grow items-center justify-center gap-1.5 rounded-lg bg-zinc-900 text-xs font-semibold text-white shadow-sm hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+        onClick={getCreateFunction()}
+      >
+        <IconPlus size={16} />
+        <span>
+          New{" "}
+          {contentType.charAt(0).toUpperCase() +
+            contentType.slice(1, contentType.length - 1)}
+        </span>
       </Button>
 
       {hasData && (
-        <Button className="size-[36px] p-1" onClick={handleCreateFolder}>
-          <IconFolderPlus size={20} />
+        <Button
+          variant="outline"
+          className="size-9 shrink-0 rounded-lg border-zinc-200 bg-transparent p-0 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100"
+          onClick={handleCreateFolder}
+          aria-label="New Folder"
+        >
+          <IconFolderPlus size={16} />
         </Button>
       )}
 

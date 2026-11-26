@@ -8,7 +8,6 @@ import { Tables } from "@/supabase/types"
 import { IconRobotFace } from "@tabler/icons-react"
 import Image from "next/image"
 import { FC, useContext, useEffect, useState } from "react"
-import profile from "react-syntax-highlighter/dist/esm/languages/hljs/profile"
 import { SidebarItem } from "../all/sidebar-display-item"
 import { AssistantRetrievalSelect } from "./assistant-retrieval-select"
 import { AssistantToolSelect } from "./assistant-tool-select"
@@ -17,8 +16,15 @@ interface AssistantItemProps {
   assistant: Tables<"assistants">
 }
 
+const inputClass =
+  "h-9 rounded-lg border-zinc-200 bg-zinc-50/50 px-3 text-xs placeholder:text-zinc-400 focus-visible:ring-1 focus-visible:ring-sky-500 dark:border-zinc-800 dark:bg-zinc-950/50"
+
+const labelClass =
+  "font-mono text-xs font-medium text-zinc-600 dark:text-zinc-400"
+
 export const AssistantItem: FC<AssistantItemProps> = ({ assistant }) => {
-  const { selectedWorkspace, assistantImages } = useContext(ChatbotUIContext)
+  const { profile, selectedWorkspace, assistantImages } =
+    useContext(ChatbotUIContext)
 
   const [name, setName] = useState(assistant.name)
   const [isTyping, setIsTyping] = useState(false)
@@ -111,18 +117,17 @@ export const AssistantItem: FC<AssistantItemProps> = ({ assistant }) => {
       icon={
         imageLink ? (
           <Image
-            style={{ width: "30px", height: "30px" }}
-            className="rounded"
+            style={{ width: "26px", height: "26px" }}
+            className="rounded-md object-cover"
             src={imageLink}
             alt={assistant.name}
-            width={30}
-            height={30}
+            width={26}
+            height={26}
           />
         ) : (
-          <IconRobotFace
-            className="bg-primary text-secondary border-primary rounded border-DEFAULT p-1"
-            size={30}
-          />
+          <div className="flex size-[26px] items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-sky-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-sky-400">
+            <IconRobotFace size={16} />
+          </div>
         )
       }
       updateState={{
@@ -166,10 +171,10 @@ export const AssistantItem: FC<AssistantItemProps> = ({ assistant }) => {
         >
       }) => (
         <>
-          <div className="space-y-1">
-            <Label>Name</Label>
-
+          <div className="space-y-1.5">
+            <Label className={labelClass}>Name</Label>
             <Input
+              className={inputClass}
               placeholder="Assistant name..."
               value={name}
               onChange={e => setName(e.target.value)}
@@ -177,10 +182,10 @@ export const AssistantItem: FC<AssistantItemProps> = ({ assistant }) => {
             />
           </div>
 
-          <div className="space-y-1 pt-2">
-            <Label>Description</Label>
-
+          <div className="space-y-1.5">
+            <Label className={labelClass}>Description</Label>
             <Input
+              className={inputClass}
               placeholder="Assistant description..."
               value={description}
               onChange={e => setDescription(e.target.value)}
@@ -188,16 +193,15 @@ export const AssistantItem: FC<AssistantItemProps> = ({ assistant }) => {
             />
           </div>
 
-          <div className="space-y-1">
-            <Label>Image</Label>
-
+          <div className="space-y-1.5">
+            <Label className={labelClass}>Avatar</Label>
             <ImagePicker
               src={imageLink}
               image={selectedImage}
               onSrcChange={setImageLink}
               onImageChange={setSelectedImage}
-              width={100}
-              height={100}
+              width={88}
+              height={88}
             />
           </div>
 
@@ -207,9 +211,8 @@ export const AssistantItem: FC<AssistantItemProps> = ({ assistant }) => {
             useAdvancedDropdown={true}
           />
 
-          <div className="space-y-1 pt-2">
-            <Label>Files & Collections</Label>
-
+          <div className="space-y-1.5">
+            <Label className={labelClass}>Files & Collections</Label>
             <AssistantRetrievalSelect
               selectedAssistantRetrievalItems={
                 [
@@ -269,9 +272,8 @@ export const AssistantItem: FC<AssistantItemProps> = ({ assistant }) => {
             />
           </div>
 
-          <div className="space-y-1">
-            <Label>Tools</Label>
-
+          <div className="space-y-1.5">
+            <Label className={labelClass}>Tools</Label>
             <AssistantToolSelect
               selectedAssistantTools={
                 renderState.selectedAssistantTools.length === 0

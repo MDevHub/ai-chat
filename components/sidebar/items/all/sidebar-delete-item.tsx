@@ -20,6 +20,7 @@ import { deleteFileFromStorage } from "@/db/storage/files"
 import { deleteTool } from "@/db/tools"
 import { Tables } from "@/supabase/types"
 import { ContentType, DataItemType } from "@/types"
+import { IconTrash } from "@tabler/icons-react"
 import { FC, useContext, useRef, useState } from "react"
 
 interface SidebarDeleteItemProps {
@@ -113,26 +114,48 @@ export const SidebarDeleteItem: FC<SidebarDeleteItemProps> = ({
   return (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogTrigger asChild>
-        <Button className="text-red-500" variant="ghost">
-          Delete
+        <Button
+          variant="ghost"
+          className="h-9 gap-1.5 rounded-lg px-3 font-mono text-xs text-rose-600 hover:bg-rose-500/10 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300"
+        >
+          <IconTrash className="size-3.5" />
+          <span>Delete</span>
         </Button>
       </DialogTrigger>
 
-      <DialogContent onKeyDown={handleKeyDown}>
-        <DialogHeader>
-          <DialogTitle>Delete {contentType.slice(0, -1)}</DialogTitle>
+      <DialogContent
+        onKeyDown={handleKeyDown}
+        className="w-full max-w-sm rounded-2xl border border-zinc-200/90 bg-white/95 p-6 shadow-xl backdrop-blur-xl dark:border-zinc-800/90 dark:bg-zinc-900/95"
+      >
+        <DialogHeader className="space-y-1.5 text-left">
+          <DialogTitle className="text-base font-semibold tracking-tight">
+            Delete {contentType.slice(0, -1)}
+          </DialogTitle>
 
-          <DialogDescription>
-            Are you sure you want to delete {item.name}?
+          <DialogDescription className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+            Are you sure you want to permanently delete{" "}
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              {item.name}
+            </span>
+            ? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => setShowDialog(false)}>
+        <DialogFooter className="mt-2 flex gap-2 sm:justify-end">
+          <Button
+            variant="outline"
+            onClick={() => setShowDialog(false)}
+            className="h-9 rounded-lg border-zinc-200 bg-transparent px-4 font-mono text-xs dark:border-zinc-800"
+          >
             Cancel
           </Button>
 
-          <Button ref={buttonRef} variant="destructive" onClick={handleDelete}>
+          <Button
+            ref={buttonRef}
+            variant="destructive"
+            onClick={handleDelete}
+            className="h-9 rounded-lg px-4 text-xs font-semibold"
+          >
             Delete
           </Button>
         </DialogFooter>

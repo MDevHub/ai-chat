@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabase/browser-client"
 import { TablesInsert, TablesUpdate } from "@/supabase/types"
-import mammoth from "mammoth"
 import { toast } from "sonner"
 import { uploadFile } from "./storage/files"
 
@@ -68,6 +67,7 @@ export const createFileBasedOnExtension = async (
 
   if (fileExtension === "docx") {
     const arrayBuffer = await file.arrayBuffer()
+    const { default: mammoth } = await import("mammoth")
     const result = await mammoth.extractRawText({
       arrayBuffer
     })
@@ -94,7 +94,10 @@ export const createFile = async (
   let validFilename = fileRecord.name.replace(/[^a-z0-9.]/gi, "_").toLowerCase()
   const extension = file.name.split(".").pop()
   const extensionIndex = validFilename.lastIndexOf(".")
-  const baseName = validFilename.substring(0, (extensionIndex < 0) ? undefined : extensionIndex)
+  const baseName = validFilename.substring(
+    0,
+    extensionIndex < 0 ? undefined : extensionIndex
+  )
   const maxBaseNameLength = 100 - (extension?.length || 0) - 1
   if (baseName.length > maxBaseNameLength) {
     fileRecord.name = baseName.substring(0, maxBaseNameLength) + "." + extension

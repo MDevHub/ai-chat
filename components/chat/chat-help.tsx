@@ -3,7 +3,8 @@ import {
   IconBrandGithub,
   IconBrandX,
   IconHelpCircle,
-  IconQuestionMark
+  IconQuestionMark,
+  IconTerminal2
 } from "@tabler/icons-react"
 import Link from "next/link"
 import { FC, useState } from "react"
@@ -27,181 +28,66 @@ export const ChatHelp: FC<ChatHelpProps> = ({}) => {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <IconQuestionMark className="bg-primary text-secondary size-[24px] cursor-pointer rounded-full p-0.5 opacity-60 hover:opacity-50 lg:size-[30px] lg:p-1" />
+        <button
+          type="button"
+          aria-label="Help & Shortcuts"
+          className="flex size-8 items-center justify-center rounded-lg border border-zinc-200/80 bg-white/80 text-zinc-500 shadow-sm backdrop-blur-md hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-100"
+        >
+          <IconQuestionMark size={16} />
+        </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel className="flex items-center justify-between">
-          <div className="flex space-x-2">
-            <Link
-              className="cursor-pointer hover:opacity-50"
-              href="https://twitter.com/ChatbotUI"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <IconBrandX />
-            </Link>
-
-            <Link
-              className="cursor-pointer hover:opacity-50"
-              href="https://github.com/mckaywrigley/chatbot-ui"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <IconBrandGithub />
-            </Link>
+      <DropdownMenuContent
+        align="end"
+        className="w-72 rounded-2xl border border-zinc-200/90 bg-white/95 p-2 shadow-xl backdrop-blur-xl dark:border-zinc-800/90 dark:bg-zinc-900/95"
+      >
+        <DropdownMenuLabel className="flex items-center justify-between px-2 py-1.5">
+          <div className="flex items-center gap-2 font-mono text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+            <IconTerminal2 className="size-4 text-sky-500" />
+            <span>mdev.ai shortcuts</span>
           </div>
 
-          <div className="flex space-x-2">
+          <div className="flex items-center gap-1.5">
             <Announcements />
-
             <Link
-              className="cursor-pointer hover:opacity-50"
-              href="/help"
+              className="text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-white"
+              href="https://github.com/MDevHub"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <IconHelpCircle size={24} />
+              <IconBrandGithub size={16} />
             </Link>
           </div>
         </DropdownMenuLabel>
 
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="my-1.5 bg-zinc-100 dark:bg-zinc-800" />
 
-        <DropdownMenuItem className="flex justify-between">
-          <div>Show Help</div>
-          <div className="flex opacity-60">
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              ⌘
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              Shift
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              /
-            </div>
-          </div>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem className="flex justify-between">
-          <div>Show Workspaces</div>
-          <div className="flex opacity-60">
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              ⌘
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              Shift
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              ;
-            </div>
-          </div>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem className="flex w-[300px] justify-between">
-          <div>New Chat</div>
-          <div className="flex opacity-60">
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              ⌘
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              Shift
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              O
-            </div>
-          </div>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem className="flex justify-between">
-          <div>Focus Chat</div>
-          <div className="flex opacity-60">
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              ⌘
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              Shift
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              L
-            </div>
-          </div>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem className="flex justify-between">
-          <div>Toggle Files</div>
-          <div className="flex opacity-60">
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              ⌘
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              Shift
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              F
-            </div>
-          </div>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem className="flex justify-between">
-          <div>Toggle Retrieval</div>
-          <div className="flex opacity-60">
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              ⌘
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              Shift
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              E
-            </div>
-          </div>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem className="flex justify-between">
-          <div>Open Settings</div>
-          <div className="flex opacity-60">
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              ⌘
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              Shift
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              I
-            </div>
-          </div>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem className="flex justify-between">
-          <div>Open Quick Settings</div>
-          <div className="flex opacity-60">
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              ⌘
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              Shift
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              P
-            </div>
-          </div>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem className="flex justify-between">
-          <div>Toggle Sidebar</div>
-          <div className="flex opacity-60">
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              ⌘
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              Shift
-            </div>
-            <div className="min-w-[30px] rounded border-DEFAULT p-1 text-center">
-              S
-            </div>
-          </div>
-        </DropdownMenuItem>
+        <div className="space-y-0.5 font-mono text-xs">
+          <DropdownMenuItem className="flex justify-between rounded-lg px-2 py-1.5">
+            <span className="text-zinc-600 dark:text-zinc-400">Show Help</span>
+            <span className="text-zinc-400">⌘⇧/</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="flex justify-between rounded-lg px-2 py-1.5">
+            <span className="text-zinc-600 dark:text-zinc-400">New Chat</span>
+            <span className="text-zinc-400">⌘⇧O</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="flex justify-between rounded-lg px-2 py-1.5">
+            <span className="text-zinc-600 dark:text-zinc-400">Focus Chat</span>
+            <span className="text-zinc-400">⌘⇧L</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="flex justify-between rounded-lg px-2 py-1.5">
+            <span className="text-zinc-600 dark:text-zinc-400">
+              Toggle Files
+            </span>
+            <span className="text-zinc-400">⌘⇧F</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="flex justify-between rounded-lg px-2 py-1.5">
+            <span className="text-zinc-600 dark:text-zinc-400">
+              Toggle Sidebar
+            </span>
+            <span className="text-zinc-400">⌘⇧S</span>
+          </DropdownMenuItem>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   )

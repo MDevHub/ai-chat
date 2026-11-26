@@ -36,7 +36,6 @@ export default function SetupPage() {
   const router = useRouter()
 
   const [loading, setLoading] = useState(true)
-
   const [currentStep, setCurrentStep] = useState(1)
 
   // Profile Step
@@ -148,7 +147,6 @@ export default function SetupPage() {
     const workspaces = await getWorkspacesByUserId(profile.user_id)
     const homeWorkspace = workspaces.find(w => w.is_home)
 
-    // There will always be a home workspace
     setSelectedWorkspace(homeWorkspace!)
     setWorkspaces(workspaces)
 
@@ -157,13 +155,12 @@ export default function SetupPage() {
 
   const renderStep = (stepNum: number) => {
     switch (stepNum) {
-      // Profile Step
       case 1:
         return (
           <StepContainer
-            stepDescription="Let's create your profile."
+            stepDescription="Claim your handle and set your workspace display name."
             stepNum={currentStep}
-            stepTitle="Welcome to Chatbot UI"
+            stepTitle="Initialize Profile"
             onShouldProceed={handleShouldProceed}
             showNextButton={!!(username && usernameAvailable)}
             showBackButton={false}
@@ -179,13 +176,12 @@ export default function SetupPage() {
           </StepContainer>
         )
 
-      // API Step
       case 2:
         return (
           <StepContainer
-            stepDescription="Enter API keys for each service you'd like to use."
+            stepDescription="Connect your model providers now or skip and configure later."
             stepNum={currentStep}
-            stepTitle="Set API Keys (optional)"
+            stepTitle="Provider API Keys (Optional)"
             onShouldProceed={handleShouldProceed}
             showNextButton={true}
             showBackButton={true}
@@ -225,13 +221,12 @@ export default function SetupPage() {
           </StepContainer>
         )
 
-      // Finish Step
       case 3:
         return (
           <StepContainer
-            stepDescription="You are all set up!"
+            stepDescription="Environment verification complete."
             stepNum={currentStep}
-            stepTitle="Setup Complete"
+            stepTitle="Ready to Launch"
             onShouldProceed={handleShouldProceed}
             showNextButton={true}
             showBackButton={true}
@@ -249,7 +244,8 @@ export default function SetupPage() {
   }
 
   return (
-    <div className="flex h-full items-center justify-center">
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-zinc-50 px-4 text-zinc-900 dark:bg-[#0a0a0c] dark:text-zinc-100">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-500/10 blur-[120px] dark:bg-sky-400/[0.08]" />
       {renderStep(currentStep)}
     </div>
   )
